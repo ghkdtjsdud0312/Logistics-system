@@ -1,0 +1,16 @@
+{
+  // 백엔드를 디버그 모드로 실행 (F5). 인프라(docker)는 먼저 켜져 있어야 함
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Backend (Spring Boot)",
+      "request": "launch",
+      "mainClass": "com.logistics.MainApplication",
+      "projectName": "logistics-system_back",
+      "cwd": "${workspaceFolder}/backend",
+      "env": { "JPA_DDL_AUTO": "validate" },
+      "preLaunchTask": "infra: up"
+    }
+  ]
+}

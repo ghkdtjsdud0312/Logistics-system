@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: logistics-system
+
+  # --- PostgreSQL ---
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:logistics}
+    username: ${DB_USERNAME:logistics}
+    password: ${DB_PASSWORD:logistics}
+    driver-class-name: org.postgresql.Driver
+
+  # --- JPA ---
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: false
+
+  # --- Redis ---
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  # --- Kafka ---
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+    consumer:
+      group-id: logistics-system
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "com.logistics.*"
+
+  # --- 정적 리소스에 대해 MVC async(SSE)에 영향 없도록 타임아웃 넉넉히 ---
+  mvc:
+    async:
+      request-timeout: -1
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# --- Swagger / OpenAPI ---
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+# --- Actuator ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.logistics: ${LOG_LEVEL:debug}
+    org.hibernate.SQL: ${LOG_LEVEL:debug}

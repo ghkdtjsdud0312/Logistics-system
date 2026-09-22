@@ -1,0 +1,66 @@
+# ==========================================
+# 1. OS 전역 및 개발 도구 (System & IDE)
+# ==========================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.patch
+*.diff
+
+# ==========================================
+# 2. 인프라 및 도커 볼륨 데이터 (Docker & Infra)
+# ==========================================
+**/postgres_data/
+**/redis_data/
+**/kafka_data/
+**/zookeeper_data/
+**/.docker/
+
+# 환경 변수 및 자격 증명 (민감 정보)
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+*.p12
+
+# ==========================================
+# 3. 백엔드 심화 설정 (Java / Spring Boot / Gradle)
+# ==========================================
+.gradle/
+build/
+out/
+bin/
+.settings/
+.classpath
+.project
+
+# 컴파일 캐시 및 덤프 파일
+**/.gradle/configuration-cache/
+**/*.class
+*.hprof
+*.hprof.txt
+*.flip
+
+# 애플리케이션 로그
+*.log
+logs/
+**/logs/
+
+# Annotation Processor (Lombok 캐시)
+.generated/
+
+# ==========================================
+# 4. 성능 및 부하 테스트 (k6)
+# ==========================================
+k6-reports/
+*.summary.json
+k6-performance.log

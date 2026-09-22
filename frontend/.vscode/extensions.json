@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "rvest.vs-code-prettier-eslint",
+    "pkief.material-icon-theme",
+    "heybourn.headwind",
+    "dbaeumer.vscode-eslint",
+    "dsznajder.es7-react-js-snippets",
+    "mgmcdermott.vscode-language-babel",
+    "ms-azuretools.vscode-containers",
+    "orta.vscode-jest",
+    "styled-components.vscode-styled-components",
+    "planbcoding.vscode-react-refactor",
+    "bradlc.vscode-tailwindcss",
+    "reactjs.reactjs-code-snippets",
+    "anthropic.claude-code"
+  ]
+}
