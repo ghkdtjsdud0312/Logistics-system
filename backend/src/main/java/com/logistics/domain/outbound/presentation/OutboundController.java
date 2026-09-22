@@ -1,6 +1,7 @@
 package com.logistics.domain.outbound.presentation;
 
 import com.logistics.domain.outbound.application.OutboundService;
+import com.logistics.domain.outbound.presentation.dto.AvailableInboundResponse;
 import com.logistics.domain.outbound.presentation.dto.OutboundCreateRequest;
 import com.logistics.domain.outbound.presentation.dto.OutboundResponse;
 import com.logistics.global.common.ApiResponse;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "출고 관리", description = "출고 등록/조회 API")
+@Tag(name = "출고 관리", description = "출고 계획 등록/조회 API")
 @RestController
 @RequestMapping("/api/outbounds")
 @RequiredArgsConstructor
@@ -37,6 +38,16 @@ public class OutboundController {
                 .map(OutboundResponse::from)
                 .toList();
         return ApiResponse.success(responses);
+    }
+
+    @GetMapping("/available-inbounds")
+    public ApiResponse<List<AvailableInboundResponse>> getAvailableInbounds() {
+        return ApiResponse.success(outboundService.getAvailableInbounds());
+    }
+
+    @PatchMapping("/{id}/pick")
+    public ApiResponse<OutboundResponse> pick(@PathVariable Long id) {
+        return ApiResponse.success(OutboundResponse.from(outboundService.pickOutbound(id)));
     }
 
     @PatchMapping("/{id}/ship")

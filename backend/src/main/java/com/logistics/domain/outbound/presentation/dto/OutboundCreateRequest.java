@@ -1,11 +1,13 @@
 package com.logistics.domain.outbound.presentation.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotEmpty;
+
+import java.util.List;
 
 public record OutboundCreateRequest(
-        @NotBlank(message = "품목명은 필수입니다.") String itemName,
-        @Positive(message = "수량은 0보다 커야 합니다.") int quantity,
-        @NotBlank(message = "도착지는 필수입니다.") String destination
+        @NotBlank(message = "도착지는 필수입니다.") String destination,
+        @NotEmpty(message = "출고 항목은 1개 이상이어야 합니다.") @Valid List<OutboundItemRequest> items
 ) {
 }
