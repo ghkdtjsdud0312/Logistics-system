@@ -23,6 +23,14 @@
 | anomaly | id, dispatch_id, type, severity, status, detected_at, fingerprint | fingerprint UNIQUE |
 | processed_event | consumer_name, event_id, processed_at | 복합 PK, 멱등 Consumer |
 
+### 실제 구현 (입고/출고, 단순화 버전)
+
+| 테이블 | 주요 컬럼 | 핵심 제약 |
+|---|---|---|
+| inbound | id, item_name, quantity, warehouse_location, status, inspected_quantity | inspected_quantity는 COMPLETED 전엔 null |
+| outbound | id, destination, status | items로 물량 구성, 자체 quantity 컬럼 없음 |
+| outbound_item | id, outbound_id(FK), inbound_id(FK 아님, ID 참조), quantity | outbound_id는 outbound 소속(같은 도메인), inbound_id는 타 도메인이라 FK 미설정 |
+
 ## 데이터 타입 원칙
 
 - 식별자: UUID

@@ -38,6 +38,15 @@
 
 배송 실패는 `ARRIVED → FAILED`로 기록하며 운영자가 재시도 정책을 결정한다. MVP에서는 자동 재배차하지 않는다.
 
+## 실제 구현 (입고/출고, 단순화 버전)
+
+현재 코드의 상태 머신은 위 이론 모델보다 단순하다.
+
+- `InboundStatus`: `REQUESTED(입고 요청) → IN_PROGRESS(입고 처리) → COMPLETED(검수 완료, inspectedQuantity 기록)`, `CANCELLED`는 COMPLETED 전 언제든 가능.
+- `OutboundStatus`: `REQUESTED(출고 계획) → PICKING(피킹) → SHIPPED(출고 완료)`, `CANCELLED`는 SHIPPED 전 언제든 가능.
+- `Outbound`는 하나의 출고 계획이 여러 `Inbound`의 물량을 합쳐 구성할 수 있다(1:N). `OutboundItem{outboundId, inboundId, quantity}`로 표현하며, `inboundId`는 다른 도메인의 ID 참조일 뿐 FK나 JPA 연관관계를 걸지 않는다.
+- 출고 생성 시 각 item마다 `Inbound.status == COMPLETED`이고 `inspectedQuantity - 이미 배정된 수량 >= 요청 수량`인지 검증한다. `OutboundService`는 `InboundRepository`를 직접 주입받지 않고 `InboundService`(Application Service)를 통해서만 Inbound 정보를 조회한다.
+
 ## 배차 가능성 규칙
 
 차량 `v`와 출고 계획 집합 `O`에 대해 다음을 모두 만족해야 한다.

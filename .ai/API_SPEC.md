@@ -27,6 +27,28 @@ Base path: `/api/v1`
 | API-013 | GET | `/dashboard/summary` | 운영 요약 |
 | API-014 | GET | `/events/logistics` | SSE 스트림 |
 
+## 구현된 API — 입고/출고 (실제)
+
+위 "핵심 API" 표는 `/api/v1` 기준의 초기 설계이고, 실제 구현은 `/api/deliveries`와 마찬가지로 `/api/v1` 없이 진행되었다. 입고→검수→출고 흐름은 아래와 같이 구현되어 있다.
+
+| Method | Path | 설명 | Body |
+|---|---|---|---|
+| POST | `/api/inbounds` | 입고 요청 등록 (status=REQUESTED) | `{itemName, quantity, warehouseLocation}` |
+| PATCH | `/api/inbounds/{id}/start` | 입고 처리 시작 (REQUESTED→IN_PROGRESS) | - |
+| PATCH | `/api/inbounds/{id}/complete` | 검수 완료 (IN_PROGRESS→COMPLETED) | `{inspectedQuantity}` |
+| GET | `/api/inbounds/{id}` | 입고 단건 조회 | - |
+| GET | `/api/inbounds` | 입고 목록 조회 | - |
+| GET | `/api/outbounds/available-inbounds` | 출고 대상 선정 (검수완료 + 가용수량>0 입고 목록) | - |
+| POST | `/api/outbounds` | 출고 계획 생성 (여러 입고건 1:N 조합) | `{destination, items:[{inboundId, quantity}]}` |
+| PATCH | `/api/outbounds/{id}/pick` | 피킹 시작 (REQUESTED→PICKING) | - |
+| PATCH | `/api/outbounds/{id}/ship` | 출고 완료 (PICKING→SHIPPED) | - |
+| GET | `/api/outbounds/{id}` | 출고 단건 조회 | - |
+| GET | `/api/outbounds` | 출고 목록 조회 | - |
+
+응답은 공통 `ApiResponse<T>` 포맷(`{success, message, data}`)을 사용하며, 위 "공통 오류 응답" 절의 형식과는 다르다 (실제 구현은 `ErrorResponse`: `{code, message, errors?}`).
+
+`POST /api/outbounds`는 각 item마다 대상 `Inbound`가 `COMPLETED` 상태인지, `inspectedQuantity - 이미 배정된 수량 >= 요청 수량`인지 서버에서 검증하며, 위반 시 각각 `OB004`(미검수), `OB003`(수량 초과) 오류를 반환한다.
+
 ## 공통 오류 응답
 
 ```json
