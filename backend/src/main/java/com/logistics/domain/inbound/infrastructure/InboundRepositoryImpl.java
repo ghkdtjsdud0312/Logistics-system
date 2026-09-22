@@ -2,6 +2,7 @@ package com.logistics.domain.inbound.infrastructure;
 
 import com.logistics.domain.inbound.domain.Inbound;
 import com.logistics.domain.inbound.domain.InboundRepository;
+import com.logistics.domain.inbound.domain.InboundStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -30,5 +31,10 @@ public class InboundRepositoryImpl implements InboundRepository {
     @Override
     public List<Inbound> findAll() {
         return inboundJpaRepository.findAll();
+    }
+
+    @Override
+    public List<Inbound> findByStatus(InboundStatus status) {
+        return inboundJpaRepository.findByStatus(status);
     }
 }

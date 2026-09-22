@@ -18,9 +18,13 @@ public enum ErrorCode {
 
     // Inbound
     INBOUND_NOT_FOUND(HttpStatus.NOT_FOUND, "IB001", "입고 정보를 찾을 수 없습니다."),
+    INBOUND_INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "IB002", "허용되지 않은 입고 상태 전이입니다."),
 
     // Outbound
     OUTBOUND_NOT_FOUND(HttpStatus.NOT_FOUND, "OB001", "출고 정보를 찾을 수 없습니다."),
+    OUTBOUND_INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "OB002", "허용되지 않은 출고 상태 전이입니다."),
+    OUTBOUND_QUANTITY_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "OB003", "가용 입고 수량을 초과했습니다."),
+    OUTBOUND_SOURCE_INBOUND_NOT_COMPLETED(HttpStatus.UNPROCESSABLE_ENTITY, "OB004", "검수 완료되지 않은 입고는 출고 대상으로 선택할 수 없습니다."),
 
     // Dispatch
     DISPATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "DP001", "배차 정보를 찾을 수 없습니다."),

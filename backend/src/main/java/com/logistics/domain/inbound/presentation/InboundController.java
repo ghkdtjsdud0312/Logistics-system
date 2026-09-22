@@ -1,6 +1,8 @@
 package com.logistics.domain.inbound.presentation;
 
 import com.logistics.domain.inbound.application.InboundService;
+import com.logistics.domain.inbound.domain.Inbound;
+import com.logistics.domain.inbound.presentation.dto.InboundCompleteRequest;
 import com.logistics.domain.inbound.presentation.dto.InboundCreateRequest;
 import com.logistics.domain.inbound.presentation.dto.InboundResponse;
 import com.logistics.global.common.ApiResponse;
@@ -39,8 +41,16 @@ public class InboundController {
         return ApiResponse.success(responses);
     }
 
+    @PatchMapping("/{id}/start")
+    public ApiResponse<InboundResponse> start(@PathVariable Long id) {
+        return ApiResponse.success(InboundResponse.from(inboundService.startInbound(id)));
+    }
+
     @PatchMapping("/{id}/complete")
-    public ApiResponse<InboundResponse> complete(@PathVariable Long id) {
-        return ApiResponse.success(InboundResponse.from(inboundService.completeInbound(id)));
+    public ApiResponse<InboundResponse> complete(
+            @PathVariable Long id,
+            @Valid @RequestBody InboundCompleteRequest request) {
+        Inbound inbound = inboundService.completeInbound(id, request.inspectedQuantity());
+        return ApiResponse.success(InboundResponse.from(inbound));
     }
 }

@@ -2,6 +2,7 @@ package com.logistics.domain.inbound.application;
 
 import com.logistics.domain.inbound.domain.Inbound;
 import com.logistics.domain.inbound.domain.InboundRepository;
+import com.logistics.domain.inbound.domain.InboundStatus;
 import com.logistics.domain.inbound.presentation.dto.InboundCreateRequest;
 import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
@@ -40,10 +41,22 @@ public class InboundService {
         return inboundRepository.findAll();
     }
 
+    /** 검수 완료(COMPLETED)된 입고 목록 - 출고 대상 선정에 사용 */
+    public List<Inbound> getCompletedInbounds() {
+        return inboundRepository.findByStatus(InboundStatus.COMPLETED);
+    }
+
     @Transactional
-    public Inbound completeInbound(Long id) {
+    public Inbound startInbound(Long id) {
         Inbound inbound = getInbound(id);
-        inbound.complete();
+        inbound.start();
+        return inbound;
+    }
+
+    @Transactional
+    public Inbound completeInbound(Long id, int inspectedQuantity) {
+        Inbound inbound = getInbound(id);
+        inbound.complete(inspectedQuantity);
         return inbound;
     }
 }

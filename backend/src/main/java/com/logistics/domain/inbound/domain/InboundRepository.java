@@ -14,4 +14,6 @@ public interface InboundRepository {
     Optional<Inbound> findById(Long id);
 
     List<Inbound> findAll();
+
+    List<Inbound> findByStatus(InboundStatus status);
 }

@@ -11,6 +11,7 @@ public record InboundResponse(
         int quantity,
         String warehouseLocation,
         InboundStatus status,
+        Integer inspectedQuantity,
         LocalDateTime createdAt
 ) {
     public static InboundResponse from(Inbound inbound) {
@@ -20,6 +21,7 @@ public record InboundResponse(
                 inbound.getQuantity(),
                 inbound.getWarehouseLocation(),
                 inbound.getStatus(),
+                inbound.getInspectedQuantity(),
                 inbound.getCreatedAt()
         );
     }

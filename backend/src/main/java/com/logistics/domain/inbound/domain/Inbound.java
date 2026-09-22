@@ -1,6 +1,8 @@
 package com.logistics.domain.inbound.domain;
 
 import com.logistics.global.common.BaseTimeEntity;
+import com.logistics.global.error.BusinessException;
+import com.logistics.global.error.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -33,6 +35,9 @@ public class Inbound extends BaseTimeEntity {
     @Column(nullable = false)
     private InboundStatus status;
 
+    /** 검수 완료 시에만 값이 채워지는 실 수령 수량 */
+    private Integer inspectedQuantity;
+
     @Builder
     public Inbound(String itemName, int quantity, String warehouseLocation) {
         this.itemName = itemName;
@@ -41,11 +46,27 @@ public class Inbound extends BaseTimeEntity {
         this.status = InboundStatus.REQUESTED;
     }
 
-    public void complete() {
+    /** 입고 처리 시작: REQUESTED -> IN_PROGRESS */
+    public void start() {
+        if (this.status != InboundStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.INBOUND_INVALID_STATUS_TRANSITION);
+        }
+        this.status = InboundStatus.IN_PROGRESS;
+    }
+
+    /** 검수 완료: IN_PROGRESS -> COMPLETED, 검수 수량 기록 */
+    public void complete(int inspectedQuantity) {
+        if (this.status != InboundStatus.IN_PROGRESS) {
+            throw new BusinessException(ErrorCode.INBOUND_INVALID_STATUS_TRANSITION);
+        }
+        this.inspectedQuantity = inspectedQuantity;
         this.status = InboundStatus.COMPLETED;
     }
 
     public void cancel() {
+        if (this.status == InboundStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.INBOUND_INVALID_STATUS_TRANSITION);
+        }
         this.status = InboundStatus.CANCELLED;
     }
 }
