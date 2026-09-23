@@ -44,11 +44,14 @@ class OutboundServiceTest {
         Long inbound2 = completeInbound("파렛트 B", 5, 5);
 
         Outbound outbound = outboundService.createOutbound(new OutboundCreateRequest(
-                "서울 물류센터",
-                List.of(new OutboundItemRequest(inbound1, 6), new OutboundItemRequest(inbound2, 5))));
+                "서울 물류센터", 37.50, 127.00,
+                List.of(new OutboundItemRequest(inbound1, 6, 60.0, 1.2),
+                        new OutboundItemRequest(inbound2, 5, 25.0, 0.5))));
 
         assertThat(outbound.getId()).isNotNull();
         assertThat(outbound.totalQuantity()).isEqualTo(11);
+        assertThat(outbound.totalWeightKg()).isEqualTo(85.0);
+        assertThat(outbound.totalVolumeM3()).isEqualTo(1.7);
     }
 
     @Test
@@ -58,7 +61,7 @@ class OutboundServiceTest {
                 new InboundCreateRequest("파렛트 C", 10, "A-02"));
 
         assertThatThrownBy(() -> outboundService.createOutbound(new OutboundCreateRequest(
-                "부산 물류센터", List.of(new OutboundItemRequest(requested.getId(), 1)))))
+                "부산 물류센터", 37.50, 127.00, List.of(new OutboundItemRequest(requested.getId(), 1, 5.0, 0.1)))))
                 .isInstanceOf(BusinessException.class);
     }
 
@@ -68,7 +71,7 @@ class OutboundServiceTest {
         Long inboundId = completeInbound("파렛트 D", 10, 10);
 
         assertThatThrownBy(() -> outboundService.createOutbound(new OutboundCreateRequest(
-                "대전 물류센터", List.of(new OutboundItemRequest(inboundId, 11)))))
+                "대전 물류센터", 37.50, 127.00, List.of(new OutboundItemRequest(inboundId, 11, 50.0, 1.0)))))
                 .isInstanceOf(BusinessException.class);
     }
 }

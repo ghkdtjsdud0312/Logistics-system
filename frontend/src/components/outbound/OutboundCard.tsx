@@ -13,7 +13,7 @@ function OutboundCard({ outbound, onChanged }: Props) {
     <div className="rounded-lg border bg-white p-3 shadow-sm">
       <p className="font-medium text-gray-900">{outbound.destination}</p>
       <p className="mt-1 text-xs text-gray-500">
-        {outbound.items.length}건 · 총 {outbound.totalQuantity}개
+        {outbound.items.length}건 · 총 {outbound.totalQuantity}개 · {outbound.totalWeightKg}kg · {outbound.totalVolumeM3}㎥
       </p>
       <p className="text-xs text-gray-400">{formatDate(outbound.createdAt)}</p>
 

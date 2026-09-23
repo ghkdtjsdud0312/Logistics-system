@@ -4,17 +4,19 @@ import com.logistics.domain.inbound.application.InboundService;
 import com.logistics.domain.inbound.domain.Inbound;
 import com.logistics.domain.inbound.domain.InboundStatus;
 import com.logistics.domain.outbound.domain.Outbound;
+import com.logistics.domain.outbound.domain.OutboundItemInput;
 import com.logistics.domain.outbound.domain.OutboundRepository;
 import com.logistics.domain.outbound.domain.OutboundStatus;
 import com.logistics.domain.outbound.presentation.dto.AvailableInboundResponse;
 import com.logistics.domain.outbound.presentation.dto.OutboundCreateRequest;
+import com.logistics.domain.outbound.presentation.dto.OutboundItemRequest;
 import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,12 +34,18 @@ public class OutboundService {
 
     @Transactional
     public Outbound createOutbound(OutboundCreateRequest request) {
-        Map<Long, Integer> quantities = new LinkedHashMap<>();
-        request.items().forEach(item -> {
-            validateAvailable(item.inboundId(), item.quantity());
-            quantities.merge(item.inboundId(), item.quantity(), Integer::sum);
-        });
-        return outboundRepository.save(Outbound.create(request.destination(), quantities));
+        Map<Long, Integer> requestedSoFar = new HashMap<>();
+        List<OutboundItemInput> itemInputs = request.items().stream()
+                .map(item -> toValidatedInput(item, requestedSoFar))
+                .toList();
+        return outboundRepository.save(
+                Outbound.create(request.destination(), request.latitude(), request.longitude(), itemInputs));
+    }
+
+    private OutboundItemInput toValidatedInput(OutboundItemRequest item, Map<Long, Integer> requestedSoFar) {
+        int cumulative = requestedSoFar.merge(item.inboundId(), item.quantity(), Integer::sum);
+        validateAvailable(item.inboundId(), cumulative);
+        return new OutboundItemInput(item.inboundId(), item.quantity(), item.weightKg(), item.volumeM3());
     }
 
     public Outbound getOutbound(Long id) {
@@ -47,6 +55,18 @@ public class OutboundService {
 
     public List<Outbound> getOutboundList() {
         return outboundRepository.findAll();
+    }
+
+    /** 배차용 합산 적재량 (Dispatch 도메인이 이 메서드를 통해서만 출고 데이터를 조회한다) */
+    public OutboundLoadSummary summarizeLoad(List<Long> outboundIds) {
+        double weight = 0;
+        double volume = 0;
+        for (Long id : outboundIds) {
+            Outbound outbound = getOutbound(id);
+            weight += outbound.totalWeightKg();
+            volume += outbound.totalVolumeM3();
+        }
+        return new OutboundLoadSummary(weight, volume);
     }
 
     @Transactional

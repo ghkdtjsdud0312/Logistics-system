@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 출고 계획 도메인 엔티티 (Aggregate Root)
@@ -29,6 +28,13 @@ public class Outbound extends BaseTimeEntity {
     @Column(nullable = false)
     private String destination;
 
+    /** 배송지 좌표 (ADR-008) - Day 4 경로 최적화의 입력값 */
+    @Column(nullable = false)
+    private double latitude;
+
+    @Column(nullable = false)
+    private double longitude;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OutboundStatus status;
@@ -36,21 +42,31 @@ public class Outbound extends BaseTimeEntity {
     @OneToMany(mappedBy = "outbound", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OutboundItem> items = new ArrayList<>();
 
-    private Outbound(String destination) {
+    private Outbound(String destination, double latitude, double longitude) {
         this.destination = destination;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.status = OutboundStatus.REQUESTED;
     }
 
-    /** 출고 계획 생성: 도착지와 {입고ID: 수량} 목록으로 items를 함께 구성한다. */
-    public static Outbound create(String destination, Map<Long, Integer> inboundQuantities) {
-        Outbound outbound = new Outbound(destination);
-        inboundQuantities.forEach((inboundId, quantity) ->
-                outbound.items.add(new OutboundItem(outbound, inboundId, quantity)));
+    /** 출고 계획 생성: 도착지/좌표와 품목별 입력값(입고ID/수량/중량/부피) 목록으로 items를 함께 구성한다. */
+    public static Outbound create(String destination, double latitude, double longitude, List<OutboundItemInput> itemInputs) {
+        Outbound outbound = new Outbound(destination, latitude, longitude);
+        itemInputs.forEach(input -> outbound.items.add(new OutboundItem(
+                outbound, input.inboundId(), input.quantity(), input.weightKg(), input.volumeM3())));
         return outbound;
     }
 
     public int totalQuantity() {
         return items.stream().mapToInt(OutboundItem::getQuantity).sum();
+    }
+
+    public double totalWeightKg() {
+        return items.stream().mapToDouble(OutboundItem::getWeightKg).sum();
+    }
+
+    public double totalVolumeM3() {
+        return items.stream().mapToDouble(OutboundItem::getVolumeM3).sum();
     }
 
     /** 피킹 시작: REQUESTED -> PICKING */

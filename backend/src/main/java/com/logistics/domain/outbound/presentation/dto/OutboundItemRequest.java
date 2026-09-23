@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Positive;
 
 public record OutboundItemRequest(
         @NotNull(message = "입고 ID는 필수입니다.") Long inboundId,
-        @Positive(message = "수량은 0보다 커야 합니다.") int quantity
+        @Positive(message = "수량은 0보다 커야 합니다.") int quantity,
+        @Positive(message = "중량은 0보다 커야 합니다.") double weightKg,
+        @Positive(message = "부피는 0보다 커야 합니다.") double volumeM3
 ) {
 }
