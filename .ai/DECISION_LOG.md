@@ -27,11 +27,41 @@
 - 결정: 배차 상세 조회에 cache-aside를 적용하고 상태 변경 후 무효화한다.
 - 이유: 조회 집중 시나리오에서 k6로 효과와 한계를 측정할 수 있다.
 
+## ADR-006 출고 품목 단위 적재량 입력
+
+- 날짜: 2026-09-23
+- 상태: Accepted
+- 맥락: 배차 적재량 검증(TASK-005)을 구현하려면 중량/부피 데이터가 필요한데, `Inbound`/`Outbound` 어디에도 존재하지 않았다. 입고 시점 실측(옵션 B)이 실무에 더 가깝지만, Outbound가 `inboundId`만 참조하는 구조상 도메인 간 조회 인터페이스를 새로 설계해야 해 Day 3 범위를 넘어선다.
+- 선택지: (A) `OutboundItem`에 `weightKg`/`volumeM3` 직접 입력, (B) `Inbound`에 실측값을 기록하고 Outbound가 참조.
+- 결정: Day 3는 옵션 A로 진행한다. `OutboundItem`에 `weightKg`(양수), `volumeM3`(양수)를 추가하고 출고 등록 시 담당자가 입력한다.
+- 근거: 도메인 1개만 변경하면 되어 Day 3 일정(차량 후보~배차 확정) 안에 완료 가능하고, 향후 옵션 B로 교체 가능한 구조로 남겨둔다.
+- 결과와 위험: 같은 품목을 여러 번 출고할 때 값을 반복 입력해야 하며 담당자 입력 오차가 발생할 수 있다. 옵션 B 전환은 `TASKS.md`에 후속 과제로 기록한다.
+
+## ADR-007 기사·차량 일정 겹침 판단 방식
+
+- 날짜: 2026-09-23
+- 상태: Accepted
+- 맥락: TASK-006 완료 조건("기사 일정 경계가 맞닿는 경우와 겹치는 경우" 테스트)은 시간 구간 겹침 판단을 요구하는데, `Dispatch`에는 계획 시각(`plannedAt`) 하나만 있고 종료 시각/소요시간 개념이 없었다. 이 값이 없으면 `Vehicle`/`Driver`의 상태(AVAILABLE 등)를 배차 시점에 ASSIGNED로 바꾸는 방식으로 단순화할 수도 있었지만, 그러면 하루 중 겹치지 않는 여러 배차를 같은 차량/기사에 할당할 수 없게 되어 DOMAIN.md의 "차량과 기사는 해당 시간에 가용해야 한다" + "일정 겹침 없음"이라는 두 개의 독립된 조건과 맞지 않는다.
+- 선택지: (A) 배차 확정 시 차량/기사 status를 ASSIGNED로 전환해 동시에 최대 1건만 허용, (B) status는 정비/휴무 같은 거시 상태만 표현하고, 개별 배차는 계획 시각부터 고정 길이 창(예: 4시간)으로 겹침을 판단.
+- 결정: 옵션 B. `DispatchWindow.of(plannedAt)`으로 `[plannedAt, plannedAt+4h)` 구간을 만들고, 같은 차량/기사의 활성 배차들과 겹치는지(`ScheduleConflictChecker`)로 판단한다. 경계가 맞닿는 경우(`end == start`)는 겹치지 않는 것으로 처리한다.
+- 근거: 실제 하루 여러 건 배차를 표현할 수 있고, DOMAIN.md의 두 조건(가용 상태 + 일정 겹침)을 각각 독립적으로 구현할 수 있다.
+- 결과와 위험: 배차 1건이 실제로 몇 시간 걸리는지는 아직 입력받지 않고 4시간 고정값을 가정한다. 실제 소요시간을 반영하려면 `plannedAt` 외에 예상 소요시간/종료시각 필드를 추가해야 한다 (후속 과제).
+
+## ADR-008 배송지 좌표와 허브 위치
+
+- 날짜: 2026-09-23
+- 상태: Accepted
+- 맥락: Day 4 경로 최적화(TASK-007)는 "허브에서 시작해 배송지를 방문"하는 Nearest Neighbor + 2-opt를 요구하는데, `Outbound`에는 `destination`(문자열)만 있고 위경도가 없다. 허브(출발지) 좌표도 시스템 어디에도 정의돼 있지 않다.
+- 선택지: (A) `Outbound`에 `latitude`/`longitude`를 출고 등록 시 직접 입력받고, 허브 좌표는 `application.yml`의 고정 설정값(`hub.latitude`/`hub.longitude`, env override 가능)으로 둔다. (B) 별도 `Warehouse`/`Address` 도메인과 지오코딩을 도입한다.
+- 결정: 옵션 A. ADR-006과 같은 패턴(입력값을 실측/외부 연동 없이 담당자가 직접 입력)을 좌표에도 적용한다.
+- 근거: 옵션 B는 Day 4 범위(실제 GPS/지오코딩은 범위 밖으로 명시됨)를 넘어서고, 새 도메인을 추가하면 Modular Monolith 경계가 늘어난다. 좌표는 위경도이므로 거리 계산은 평면 유클리드가 아닌 Haversine을 사용한다(DAY_04 문서 명시).
+- 결과와 위험: 좌표를 잘못 입력하면 경로가 왜곡된다. 허브 좌표를 바꾸려면 배포 설정을 변경해야 한다 (다중 허브는 범위 밖).
+
 ## 미결정 항목 (추측 배제 영역)
 
-1. **각 엔티티별 세부 데이터 필드**: `DATABASE.md`는 `numeric(12,3)`으로 단위 타입만 정의했다. 중량/부피의 구체적 단위가 kg/㎥인지, 별도 표기가 필요한지는 아직 확정되지 않았다.
-2. **배송 상태값의 상세 분류**: `DOMAIN.md`의 `DispatchStatus`(`DRAFT → CONFIRMED → LOADED → IN_TRANSIT → COMPLETED`)와 `StopStatus`(`PENDING → ARRIVED → DELIVERED`, 실패 시 `FAILED`)가 이미 정의되어 있다. 이 상태 코드로 충분한지, 별도의 "미배송" 등 중간 상태가 추가로 필요한지 확인이 필요하다.
-3. **경로 최적화 알고리즘 실행 시점**: 배차 완료(`CONFIRMED`)와 동시에 자동으로 최적화가 계산되는지, 담당자가 화면에서 별도로 `POST /dispatches/{id}/route/optimize`(API-007)를 호출해야 하는지 아직 결정되지 않았다.
+1. **각 엔티티별 세부 데이터 필드**: `DATABASE.md`는 `numeric(12,3)`으로 단위 타입만 정의했다. 단위는 ADR-006에 따라 kg/㎥, ADR-008에 따라 위경도(도)로 확정.
+2. **배송 상태값의 상세 분류**: DOMAIN.md의 `FAILED` StopStatus는 DAY_04 문서 자체의 상태 정의(`PENDING → ARRIVED → DELIVERED`, FAILED 언급 없음)와 달라 DAY_04 문서를 기준으로 구현하고 FAILED는 범위에서 제외한다. DispatchStatus는 DAY_04 문서대로 `CONFIRMED → LOADED → IN_TRANSIT → COMPLETED`로 확정(DRAFT 상태는 ADR-002에 따라 사용하지 않음 — 후보는 추천일 뿐 확정 즉시 CONFIRMED로 저장).
+3. **경로 최적화 실행 시점**: DAY_04 문서의 "API 범위"에 `POST /dispatches/{id}/route/optimize`가 별도 엔드포인트로 명시되어 있으므로, 배차 확정과 동시에 자동 계산하지 않고 담당자가 별도로 호출하는 방식으로 확정한다.
 4. **SSE 재연결 및 Kafka 실패 대책**: `ARCHITECTURE.md`의 이벤트 일관성 정책은 "발행 실패 가능성과 재처리 전략을 README에 한계로 기록"하는 수준까지만 정했다. 네트워크 유실 시 SSE 재연결 사양과 Kafka 메시지 발행 실패 시 Retry 전략의 구체적 범위는 아직 정의되지 않았다.
 
 ## 새 결정 기록 형식

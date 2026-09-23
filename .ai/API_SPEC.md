@@ -49,6 +49,98 @@ Base path: `/api/v1`
 
 `POST /api/outbounds`는 각 item마다 대상 `Inbound`가 `COMPLETED` 상태인지, `inspectedQuantity - 이미 배정된 수량 >= 요청 수량`인지 서버에서 검증하며, 위반 시 각각 `OB004`(미검수), `OB003`(수량 초과) 오류를 반환한다.
 
+## 확정된 API — 차량·기사·배차 확정 (Day 3, ADR-006 반영)
+
+배차 흐름: 출고 물량 → 차량 후보 조회 → 적재량 검증 → 차량 선택 → 기사 배정 → 배차 확정.
+
+ADR-006에 따라 적재량은 `OutboundItem`에 직접 입력한다. 기존 `POST /api/outbounds`의 item 구조를 확장한다.
+
+```
+POST /api/outbounds
+{ "destination": "...", "items": [{ "inboundId": 1, "quantity": 5, "weightKg": 12.5, "volumeM3": 0.8 }] }
+```
+
+| Method | Path | 설명 | Body |
+|---|---|---|---|
+| POST | `/api/vehicles` | 차량 등록 | `{vehicleNumber, vehicleType, maxWeightKg, maxVolumeM3, hubDistanceKm}` |
+| GET | `/api/vehicles?status=AVAILABLE` | 차량 목록(상태 필터) | - |
+| PATCH | `/api/vehicles/{id}/status?status=MAINTENANCE` | 차량 상태 변경(정비 등록/해제) | - |
+| POST | `/api/drivers` | 기사 등록 | `{name}` |
+| GET | `/api/drivers?status=AVAILABLE` | 기사 목록(상태 필터) | - |
+| PATCH | `/api/drivers/{id}/status?status=OFF` | 기사 상태 변경(휴무 등록/해제) | - |
+| POST | `/api/dispatches/candidates` | 차량 후보 조회(적재량 검증 포함) | 아래 참고 |
+| POST | `/api/dispatches` | 차량·기사 배차 확정 | 아래 참고 |
+
+**POST `/api/dispatches/candidates`**
+
+```json
+// Request
+{ "outboundIds": [1, 2], "plannedAt": "2026-09-24T09:00:00" }
+
+// Response (data)
+{
+  "totalWeightKg": 320.5,
+  "totalVolumeM3": 4.2,
+  "candidates": [
+    { "vehicleId": 10, "vehicleNumber": "12가3456", "usedWeightRatio": 0.64, "usedVolumeRatio": 0.52, "score": 1.16, "reason": "잔여 적재율 양호" }
+  ],
+  "excluded": [
+    { "vehicleId": 11, "vehicleNumber": "34나5678", "reasonCode": "OVER_CAPACITY", "reasonMessage": "부피 한도 초과 (4.2 > 3.8)" },
+    { "vehicleId": 12, "vehicleNumber": "56다9012", "reasonCode": "VEHICLE_UNAVAILABLE", "reasonMessage": "정비중" }
+  ]
+}
+```
+
+**POST `/api/dispatches`**
+
+```json
+// Request
+{ "vehicleId": 10, "driverId": 5, "outboundIds": [1, 2], "plannedAt": "2026-09-24T09:00:00" }
+
+// Response (data)
+{ "id": 100, "vehicleId": 10, "driverId": 5, "outboundIds": [1, 2], "plannedAt": "2026-09-24T09:00:00", "totalWeightKg": 320.5, "totalVolumeM3": 4.2, "status": "CONFIRMED" }
+```
+
+실패 시 `ErrorResponse {code, message, errors?}` 형식으로 `DISPATCH_OVER_CAPACITY`, `DISPATCH_VEHICLE_UNAVAILABLE`, `DISPATCH_DRIVER_SCHEDULE_CONFLICT`, `DISPATCH_DUPLICATE_ASSIGNMENT` 중 하나를 반환한다. 기존 `POST /api/dispatches`(자유 텍스트 `driverName`/`vehicleNumber` + waypoints 직접 입력) 방식은 이 스펙으로 대체된다.
+
+**동시성/일정 모델**: `Vehicle.status`/`Driver.status`는 정비·휴무 같은 거시 상태만 표현하며, 개별 배차 점유 여부로 ASSIGNED로 전환하지 않는다(동일 차량·기사가 겹치지 않는 시간대에 여러 배차를 가질 수 있음). 배차 가능 여부는 계획 시각 기준 고정 길이(4시간) 창의 겹침으로 판단하며(`DispatchWindow`), 동시 확정 요청은 차량/기사 행에 대한 명시적(비관적) 잠금으로 직렬화한다. 출고 계획 중복 배정은 `dispatch_outbound_link` 테이블의 `outbound_id` unique 제약으로 최종 차단한다. `Dispatch` 엔티티에는 낙관적 락(`@Version`)이 있으나 위 잠금 전략과는 별개로 조회-수정 충돌 방지용으로만 존재한다.
+
+## 확정된 API — 경로 최적화·배송 상태 (Day 4, ADR-008 반영)
+
+ADR-008에 따라 `Outbound`에 `latitude`/`longitude`를 추가한다(출고 등록 시 필수 입력). 허브 좌표는 `application.yml`의 `hub.latitude`/`hub.longitude`(env override) 고정값이다. 거리는 Haversine(km)으로 계산한다.
+
+```
+POST /api/outbounds
+{ "destination": "...", "latitude": 37.50, "longitude": 127.03, "items": [...] }
+```
+
+| Method | Path | 설명 | Body |
+|---|---|---|---|
+| POST | `/api/dispatches/{id}/route/optimize` | 허브+배송지 방문 순서 계산(NN+2-opt) | - |
+| PATCH | `/api/dispatches/{id}/status` | 배차 상태 변경 | `{status, expectedVersion, actor?, description?}` |
+| PATCH | `/api/dispatches/{id}/stops/{stopId}` | 경유지 상태 변경 | `{status}` |
+| GET | `/api/dispatches/{id}` | 배차 상세(경로 `stops`, 상태 이력 `statusHistory` 포함) | - |
+
+**POST `/api/dispatches/{id}/route/optimize`**
+
+```json
+// Response (data)
+{
+  "dispatchId": 100, "algorithm": "nearest-neighbor+2opt",
+  "initialDistanceKm": 42.1, "optimizedDistanceKm": 35.7, "improvementRate": 0.152,
+  "stops": [
+    { "sequence": 0, "outboundId": null, "label": "허브", "latitude": 37.50, "longitude": 127.03, "distanceFromPreviousKm": 0.0, "status": "PENDING" },
+    { "sequence": 1, "outboundId": 1, "label": "서울", "latitude": 37.55, "longitude": 126.97, "distanceFromPreviousKm": 8.2, "status": "PENDING" }
+  ]
+}
+```
+
+**PATCH `/api/dispatches/{id}/status`**: `DispatchStatus`는 `CONFIRMED → LOADED → IN_TRANSIT → COMPLETED` 순서만 허용(단계 건너뛰기·역행·COMPLETED 이후 변경 거부). `expectedVersion`이 현재 버전과 다르면 낙관적 잠금 충돌(409)로 거부. 모든 Stop이 `DELIVERED`가 아니면 `COMPLETED`로 전이할 수 없다. 변경마다 `DispatchStatusHistory`에 actor/이전상태/이후상태/시각/description을 기록한다.
+
+**PATCH `/api/dispatches/{id}/stops/{stopId}`**: `RouteStop.status`는 `PENDING → ARRIVED → DELIVERED` 순서만 허용.
+
+실패 시 `ErrorResponse`로 `DISPATCH_INVALID_STATUS_TRANSITION`, `DISPATCH_STALE_VERSION`, `DISPATCH_STOPS_NOT_DELIVERED`, `ROUTE_STOP_NOT_FOUND`, `ROUTE_STOP_INVALID_TRANSITION` 중 하나를 반환한다.
+
 ## 공통 오류 응답
 
 ```json
