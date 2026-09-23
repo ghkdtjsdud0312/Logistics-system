@@ -4,6 +4,7 @@ import HomePage from './pages/Home';
 import InboundPage from './pages/Inbound';
 import OutboundPage from './pages/Outbound';
 import DispatchPage from './pages/Dispatch';
+import FleetPage from './pages/Fleet';
 
 /**
  * 라우팅 뼈대
@@ -18,6 +19,7 @@ function AppRouter() {
         <Route path="/inbound" element={<InboundPage />} />
         <Route path="/outbound" element={<OutboundPage />} />
         <Route path="/dispatch" element={<DispatchPage />} />
+        <Route path="/fleet" element={<FleetPage />} />
       </Route>
     </Routes>
   );

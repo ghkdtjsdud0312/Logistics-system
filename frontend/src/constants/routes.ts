@@ -6,4 +6,5 @@ export const ROUTES = {
   INBOUND: '/inbound',
   OUTBOUND: '/outbound',
   DISPATCH: '/dispatch',
+  FLEET: '/fleet',
 } as const;

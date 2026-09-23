@@ -5,6 +5,7 @@ const menuItems = [
   { to: '/inbound', label: '입고 관리' },
   { to: '/outbound', label: '출고 관리' },
   { to: '/dispatch', label: '배차 최적화' },
+  { to: '/fleet', label: '차량·기사 관리' },
 ];
 
 /**
