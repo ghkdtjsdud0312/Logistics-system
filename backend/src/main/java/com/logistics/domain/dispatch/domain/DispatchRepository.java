@@ -1,5 +1,6 @@
 package com.logistics.domain.dispatch.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,9 @@ public interface DispatchRepository {
     List<Dispatch> findActiveByVehicleId(Long vehicleId);
 
     List<Dispatch> findActiveByDriverId(Long driverId);
+
+    /** IN_TRANSIT 상태가 기준 시각 이전부터 유지된 배차 - 정체 탐지용 */
+    List<Dispatch> findStalledInTransit(LocalDateTime cutoff);
 
     boolean existsByOutboundIdsContaining(Long outboundId);
 

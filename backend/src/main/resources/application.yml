@@ -55,6 +55,14 @@ hub:
   latitude: ${HUB_LATITUDE:37.5665}
   longitude: ${HUB_LONGITUDE:126.9780}
 
+# --- 배차 이상 탐지/캐시 설정: ADR-009/010 ---
+dispatch:
+  stalled-threshold-minutes: ${DISPATCH_STALLED_THRESHOLD_MINUTES:240}
+
+app:
+  cache:
+    dispatch-detail-ttl-seconds: ${CACHE_DISPATCH_DETAIL_TTL_SECONDS:60}
+
 # --- Swagger / OpenAPI ---
 springdoc:
   api-docs:

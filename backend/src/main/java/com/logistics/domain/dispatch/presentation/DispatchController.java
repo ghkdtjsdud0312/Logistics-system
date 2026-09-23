@@ -23,6 +23,7 @@ public class DispatchController {
     private final RouteOptimizationService routeOptimizationService;
     private final DispatchStatusService dispatchStatusService;
     private final RouteStopService routeStopService;
+    private final DispatchDetailService dispatchDetailService;
 
     @PostMapping("/candidates")
     public ApiResponse<DispatchCandidateResponse> findCandidates(@Valid @RequestBody DispatchCandidateRequest request) {
@@ -37,9 +38,7 @@ public class DispatchController {
 
     @GetMapping("/{id}")
     public ApiResponse<DispatchDetailResponse> getOne(@PathVariable Long id) {
-        var dispatch = dispatchService.getDispatchWithStops(id);
-        var history = dispatchStatusService.getHistory(id);
-        return ApiResponse.success(DispatchDetailResponse.of(dispatch, history));
+        return ApiResponse.success(dispatchDetailService.getDetail(id));
     }
 
     @GetMapping

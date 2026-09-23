@@ -6,6 +6,7 @@ import com.logistics.domain.dispatch.domain.DispatchStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,11 @@ public class DispatchRepositoryImpl implements DispatchRepository {
     @Override
     public boolean existsByOutboundIdsContaining(Long outboundId) {
         return dispatchJpaRepository.existsByOutboundIdsContaining(outboundId);
+    }
+
+    @Override
+    public List<Dispatch> findStalledInTransit(LocalDateTime cutoff) {
+        return dispatchJpaRepository.findByStatusAndUpdatedAtBefore(DispatchStatus.IN_TRANSIT, cutoff);
     }
 
     @Override

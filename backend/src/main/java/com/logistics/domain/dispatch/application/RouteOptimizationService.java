@@ -4,6 +4,7 @@ import com.logistics.domain.dispatch.domain.*;
 import com.logistics.domain.outbound.application.OutboundService;
 import com.logistics.domain.outbound.domain.Outbound;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class RouteOptimizationService {
     private final TwoOptRouteImprover twoOptImprover;
 
     @Transactional
+    @CacheEvict(cacheNames = "dispatchDetail", key = "#dispatchId")
     public Dispatch optimize(Long dispatchId) {
         Dispatch dispatch = dispatchService.getDispatch(dispatchId);
         List<Waypoint> input = buildInputRoute(dispatch);
