@@ -77,6 +77,15 @@ Vehicle/Driver 도메인, `POST /api/dispatches/candidates`, `POST /api/dispatch
 - 역직렬화 실패와 업무 실패를 구분해 로그로 남긴다.
 - 실패를 무한 재시도하지 않는다.
 
+### TASK-009/010/011 진행 상태 (2026-09-24)
+
+ADR-009/010 반영. Kafka(`logistics.dispatch.v1`, 배차 상태 성공 커밋 시에만 `@TransactionalEventListener(AFTER_COMMIT)`로 발행): HistoryConsumer(`logistics-history`, 조회용 투영 `dispatch_status_projection` 멱등 갱신), AnomalyConsumer(`logistics-anomaly`, `processed_event`로 멱등 처리 + `event_cursor`로 역순 aggregateVersion 스킵). `ErrorHandlingDeserializer` + `DefaultErrorHandler(FixedBackOff 1초×2회)`로 역직렬화 오류/업무 오류 구분 및 무한 재시도 방지.
+거부형 이상(OVER_CAPACITY/DRIVER_SCHEDULE_CONFLICT/DUPLICATE_ASSIGNMENT/INVALID_TRANSITION)은 Kafka를 거치지 않고 명령 실패 시점에 `REQUIRES_NEW`로 동기 기록, `STALLED_DISPATCH`만 `@Scheduled` + 주입된 `Clock`으로 탐지. `GET /api/anomalies`, `PATCH /api/anomalies/{id}/status` 추가.
+`GET /api/dispatches/{id}`에 Redis cache-aside 적용(`dispatch:detail:{id}`, TTL 60초, 상태/경유지/경로 변경 시 `@CacheEvict`). `CacheErrorHandler`로 Redis 장애 시 DB 폴백. 테스트 프로파일은 embedded-redis 없이 `ConcurrentMapCacheManager`로 대체(ADR-010).
+`GET /api/events/logistics` SSE(`LogisticsEventBroadcaster`, 15초 heartbeat, 전송 실패 emitter 자동 제거).
+테스트: `AnomalyServiceTest`, `StalledDispatchDetectorTest`, `DispatchRejectionAnomalyTest`, `DispatchEventConsumerTest`(실 로컬 Kafka로 멱등/역순 검증), `DispatchDetailCacheTest`, `CacheConfigTest`, `LogisticsEventBroadcasterTest`. `DispatchEventConsumerTest`는 embedded Kafka가 아닌 실 브로커에 의존해 타이밍에 따라 가끔 재시도가 필요할 수 있다(알려진 한계).
+프론트는 Day 6(TASK-012) 범위이므로 이번엔 백엔드만 구현했다.
+
 ### TASK-013
 
 - 캐시 OFF/ON 조건 외 환경을 동일하게 유지한다.

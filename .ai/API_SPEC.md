@@ -141,6 +141,37 @@ POST /api/outbounds
 
 실패 시 `ErrorResponse`로 `DISPATCH_INVALID_STATUS_TRANSITION`, `DISPATCH_STALE_VERSION`, `DISPATCH_STOPS_NOT_DELIVERED`, `ROUTE_STOP_NOT_FOUND`, `ROUTE_STOP_INVALID_TRANSITION` 중 하나를 반환한다.
 
+## 확정된 API — 이벤트·캐시·실시간 관제 (Day 5, ADR-009/010 반영)
+
+| Method | Path | 설명 |
+|---|---|---|
+| GET | `/api/dispatches/{id}` | (기존과 동일) Redis cache-aside 적용. Key `dispatch:detail:{id}`, TTL 60초(`CACHE_DISPATCH_DETAIL_TTL_SECONDS` env로 조정) |
+| GET | `/api/anomalies?status=OPEN` | 이상 목록(상태 필터) |
+| PATCH | `/api/anomalies/{id}/status` | 이상 상태 변경(`OPEN→ACKNOWLEDGED→RESOLVED`) |
+| GET | `/api/events/logistics` | SSE 스트림 (`text/event-stream`) |
+
+**캐시 무효화**: `PATCH /dispatches/{id}/status`, `PATCH /dispatches/{id}/stops/{stopId}`, `POST /dispatches/{id}/route/optimize` 성공 시 해당 `dispatch:detail:{id}` 캐시를 즉시 삭제한다. Redis 장애 시(`CacheErrorHandler`가 예외를 삼킴) 캐시를 거치지 않고 DB로 폴백하며, 이 경우 요청은 계속 성공한다.
+
+**이상 탐지 (ADR-009)**: 거부형(`OVER_CAPACITY`, `DRIVER_SCHEDULE_CONFLICT`, `DUPLICATE_ASSIGNMENT`, `INVALID_TRANSITION`)은 배차 확정/상태 변경 실패 시점에 동기적으로(REQUIRES_NEW 트랜잭션) 기록되며 Kafka를 거치지 않는다. 지연형(`STALLED_DISPATCH`)은 `IN_TRANSIT` 상태가 기준 시간(`DISPATCH_STALLED_THRESHOLD_MINUTES`, 기본 240분)을 초과하면 스케줄러가 생성한다. 동일 `fingerprint`(유형+배차ID)의 `OPEN` 이상이 이미 있으면 새로 만들지 않는다.
+
+**Kafka 이벤트** (토픽 `logistics.dispatch.v1`, 배차 상태가 성공적으로 바뀐(커밋된) 시점에만 발행):
+
+```json
+{
+  "eventId": "uuid", "eventType": "DISPATCH_IN_TRANSIT", "aggregateId": "100",
+  "aggregateVersion": 3, "occurredAt": "2026-09-24T09:00:00Z", "traceId": "...",
+  "payload": {"dispatchId": 100, "fromStatus": "LOADED", "toStatus": "IN_TRANSIT"}
+}
+```
+
+- `eventType`: `DISPATCH_CONFIRMED`, `DISPATCH_LOADED`, `DISPATCH_IN_TRANSIT`, `DISPATCH_COMPLETED` 중 하나
+- **HistoryConsumer**(`groupId=logistics-history`): `processed_event`로 멱등 처리 후 `dispatch_status_projection`(조회용 투영)을 갱신한다.
+- **AnomalyConsumer**(`groupId=logistics-anomaly`): `processed_event`로 멱등 처리하고, 같은 aggregate의 이미 처리한 `aggregateVersion`보다 낮은 이벤트(역순 도착)는 건너뛴다.
+- 두 Consumer 모두 역직렬화 실패와 업무 실패를 구분해 로그로 남기고, 무한 재시도하지 않는다(Spring Kafka 기본 재시도 3회 후 포기, DLQ는 범위 밖).
+- DB 커밋 후 발행 방식이라 Kafka 발행 자체가 실패하면 이벤트가 유실될 수 있다(Outbox 패턴은 승인 없이 추가하지 않음, 알려진 한계로 기록).
+
+**SSE**: `text/event-stream`. 배차 확정/상차/운행 시작/경유지 완료/배송 완료/이상 탐지 시점에 브로드캐스트한다. 15초 간격 heartbeat(주석 이벤트)로 연결을 유지하고, 전송 실패한 emitter는 즉시 제거한다. 이벤트 저장소로 사용하지 않는다(재연결 시 과거 이벤트 재전송 없음).
+
 ## 공통 오류 응답
 
 ```json

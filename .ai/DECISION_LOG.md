@@ -57,6 +57,24 @@
 - 근거: 옵션 B는 Day 4 범위(실제 GPS/지오코딩은 범위 밖으로 명시됨)를 넘어서고, 새 도메인을 추가하면 Modular Monolith 경계가 늘어난다. 좌표는 위경도이므로 거리 계산은 평면 유클리드가 아닌 Haversine을 사용한다(DAY_04 문서 명시).
 - 결과와 위험: 좌표를 잘못 입력하면 경로가 왜곡된다. 허브 좌표를 바꾸려면 배포 설정을 변경해야 한다 (다중 허브는 범위 밖).
 
+## ADR-009 이상 탐지 기록 경로: 거부형은 동기, 지연형만 Kafka/스케줄러
+
+- 날짜: 2026-09-23
+- 상태: Accepted
+- 맥락: Day 5(TASK-009)는 Kafka Consumer 2개(History, Anomaly)와 이상 탐지(OVER_CAPACITY 등)를 요구한다. DOMAIN.md는 이미 "거부형 이상은 명령을 실패시키면서 감사용 기록을 남긴다. 지연형 이상은 배치 검사 또는 스케줄러가 생성한다"고 정해두었다. 거부형(OVER_CAPACITY, DRIVER_SCHEDULE_CONFLICT, DUPLICATE_ASSIGNMENT, INVALID_TRANSITION)은 트랜잭션이 롤백되는 시점에 발생하므로, "커밋 후 발행" 원칙의 Kafka 이벤트로는 애초에 흘려보낼 수 없다(롤백되면 커밋 자체가 없다).
+- 결정: 거부형 이상은 각 서비스(DispatchConfirmService/DispatchStatusService/RouteStopService)가 `BusinessException`을 잡아 `AnomalyService.record(...)`를 `REQUIRES_NEW` 트랜잭션으로 즉시 호출해 기록하고 원래 예외를 다시 던진다(Kafka 미경유). `STALLED_DISPATCH`는 `@Scheduled` 배치(`StalledDispatchDetector`, 테스트 가능하도록 `Clock` 빈 주입)가 생성한다. Kafka의 두 Consumer는 배차 상태가 성공적으로 바뀐(커밋된) 사건에만 반응한다: **HistoryConsumer**는 `dispatch_status_projection`(조회용 투영)을 멱등 갱신하고, **AnomalyConsumer**는 같은 이벤트를 소비하며 `processed_event`로 중복 처리를 막고 `aggregateVersion`이 이미 처리한 것보다 낮으면(역순 도착) 건너뛴다.
+- 근거: 거부형 이상은 "명령이 실패했다"는 사실 자체가 즉시·확실하게 감사 기록으로 남아야 하므로 비동기 유실 위험이 있는 경로에 맡기지 않는다. 반면 Kafka는 DAY_05가 실제로 요구하는 두 가지(후속 투영 갱신, 멱등/순서 처리)에만 쓰여 "기술을 장식처럼 추가"하지 않는다.
+- 결과와 위험: `DISPATCH_VEHICLE_UNAVAILABLE`(차량 상태/일정 불가)은 DAY_05의 이상 유형 5개(OVER_CAPACITY, INVALID_TRANSITION, DRIVER_SCHEDULE_CONFLICT, DUPLICATE_ASSIGNMENT, STALLED_DISPATCH)에 정확히 대응되는 항목이 없어 이상 기록에서 제외했다 (필요하면 후속 과제로 유형 추가).
+
+## ADR-010 Redis 캐시 오류 처리와 테스트 전략
+
+- 날짜: 2026-09-23
+- 상태: Accepted
+- 맥락: "Redis 장애 시 DB 조회로 기능 유지"가 요구되는데, Spring의 기본 `RedisCacheManager`/`@Cacheable`는 Redis 연결 실패 시 예외를 그대로 전파한다. 또한 이 프로젝트는 Redis 통합 테스트용 embedded-redis/Testcontainers 의존성이 없다(H2로 DB만 대체하는 기존 관행과 같은 수준의 경량 대체재가 Redis엔 없음).
+- 결정: `CacheErrorHandler`를 커스텀 구현해 캐시 GET/PUT/EVICT 실패를 로그만 남기고 삼켜서(swallow) 항상 원래 메서드(DB 조회)가 실행되도록 한다. 테스트 프로파일(`application-test.yml`)은 `RedisCacheManager` 대신 Spring 내장 `ConcurrentMapCacheManager`를 사용해 새 의존성 없이 캐시 히트/미스/무효화 동작을 검증하고, "Redis 장애 시 폴백"은 `CacheErrorHandler`를 직접 호출하는 단위 테스트로 검증한다.
+- 근거: 새 인프라 의존성(Testcontainers 등)을 추가하지 않고도 캐시 로직과 장애 격리 요구사항을 모두 테스트할 수 있다.
+- 결과와 위험: 테스트가 실제 Redis 직렬화(`GenericJackson2JsonRedisSerializer`)를 거치지 않으므로, 실제 Redis 직렬화 관련 버그는 테스트로 못 잡는다 (수동 기동 후 curl 검증으로 보완).
+
 ## 미결정 항목 (추측 배제 영역)
 
 1. **각 엔티티별 세부 데이터 필드**: `DATABASE.md`는 `numeric(12,3)`으로 단위 타입만 정의했다. 단위는 ADR-006에 따라 kg/㎥, ADR-008에 따라 위경도(도)로 확정.
