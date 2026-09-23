@@ -46,7 +46,11 @@ public enum ErrorCode {
     DRIVER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR001", "기사 정보를 찾을 수 없습니다."),
 
     // Delivery
-    DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DV001", "배송 정보를 찾을 수 없습니다.");
+    DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DV001", "배송 정보를 찾을 수 없습니다."),
+
+    // Anomaly
+    ANOMALY_NOT_FOUND(HttpStatus.NOT_FOUND, "AN001", "이상 정보를 찾을 수 없습니다."),
+    ANOMALY_INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "AN002", "허용되지 않은 이상 상태 전이입니다.");
 
     private final HttpStatus status;
     private final String code;
