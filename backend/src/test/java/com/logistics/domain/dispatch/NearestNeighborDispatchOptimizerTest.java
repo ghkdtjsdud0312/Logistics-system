@@ -17,10 +17,10 @@ class NearestNeighborDispatchOptimizerTest {
     @DisplayName("가장 가까운 경유지 순서로 경로를 정렬한다")
     void optimize() {
         List<Waypoint> waypoints = List.of(
-                new Waypoint("창고", 0, 0),
-                new Waypoint("C", 10, 10),
-                new Waypoint("A", 1, 1),
-                new Waypoint("B", 2, 2)
+                new Waypoint(null, "창고", 0, 0),
+                new Waypoint(3L, "C", 10, 10),
+                new Waypoint(1L, "A", 1, 1),
+                new Waypoint(2L, "B", 2, 2)
         );
 
         List<Waypoint> result = optimizer.optimize(waypoints);

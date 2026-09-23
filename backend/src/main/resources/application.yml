@@ -50,6 +50,11 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+# --- 배송 허브(출발지) 좌표: ADR-008, 경로 최적화 시작점 ---
+hub:
+  latitude: ${HUB_LATITUDE:37.5665}
+  longitude: ${HUB_LONGITUDE:126.9780}
+
 # --- Swagger / OpenAPI ---
 springdoc:
   api-docs:

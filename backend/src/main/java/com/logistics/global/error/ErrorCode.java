@@ -29,6 +29,21 @@ public enum ErrorCode {
     // Dispatch
     DISPATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "DP001", "배차 정보를 찾을 수 없습니다."),
     DISPATCH_OPTIMIZATION_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, "DP002", "배차 최적화에 실패했습니다."),
+    DISPATCH_OVER_CAPACITY(HttpStatus.UNPROCESSABLE_ENTITY, "DP003", "차량 적재 한도를 초과했습니다."),
+    DISPATCH_VEHICLE_UNAVAILABLE(HttpStatus.CONFLICT, "DP004", "선택한 차량은 배차할 수 없는 상태입니다."),
+    DISPATCH_DRIVER_SCHEDULE_CONFLICT(HttpStatus.CONFLICT, "DP005", "선택한 기사는 해당 시간에 이미 배차가 있습니다."),
+    DISPATCH_DUPLICATE_ASSIGNMENT(HttpStatus.CONFLICT, "DP006", "이미 다른 배차에 포함된 출고 계획입니다."),
+    DISPATCH_INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "DP007", "허용되지 않은 배차 상태 전이입니다."),
+    DISPATCH_STALE_VERSION(HttpStatus.CONFLICT, "DP008", "다른 요청이 먼저 배차 상태를 변경했습니다. 다시 조회 후 시도하세요."),
+    DISPATCH_STOPS_NOT_DELIVERED(HttpStatus.CONFLICT, "DP009", "모든 경유지가 배송 완료되지 않아 배차를 완료할 수 없습니다."),
+    ROUTE_STOP_NOT_FOUND(HttpStatus.NOT_FOUND, "DP010", "경유지 정보를 찾을 수 없습니다."),
+    ROUTE_STOP_INVALID_TRANSITION(HttpStatus.CONFLICT, "DP011", "허용되지 않은 경유지 상태 전이입니다."),
+
+    // Vehicle
+    VEHICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "VH001", "차량 정보를 찾을 수 없습니다."),
+
+    // Driver
+    DRIVER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR001", "기사 정보를 찾을 수 없습니다."),
 
     // Delivery
     DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DV001", "배송 정보를 찾을 수 없습니다.");

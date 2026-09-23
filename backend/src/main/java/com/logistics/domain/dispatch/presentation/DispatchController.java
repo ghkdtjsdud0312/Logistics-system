@@ -1,8 +1,7 @@
 package com.logistics.domain.dispatch.presentation;
 
-import com.logistics.domain.dispatch.application.DispatchService;
-import com.logistics.domain.dispatch.presentation.dto.DispatchCreateRequest;
-import com.logistics.domain.dispatch.presentation.dto.DispatchResponse;
+import com.logistics.domain.dispatch.application.*;
+import com.logistics.domain.dispatch.presentation.dto.*;
 import com.logistics.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -12,23 +11,35 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "배차 최적화", description = "Nearest Neighbor 기반 배차 경로 최적화 API")
+@Tag(name = "배차 관리", description = "차량 후보 조회, 배차 확정, 경로 최적화, 상태 관리 API")
 @RestController
 @RequestMapping("/api/dispatches")
 @RequiredArgsConstructor
 public class DispatchController {
 
+    private final DispatchCandidateService dispatchCandidateService;
+    private final DispatchConfirmService dispatchConfirmService;
     private final DispatchService dispatchService;
+    private final RouteOptimizationService routeOptimizationService;
+    private final DispatchStatusService dispatchStatusService;
+    private final RouteStopService routeStopService;
+
+    @PostMapping("/candidates")
+    public ApiResponse<DispatchCandidateResponse> findCandidates(@Valid @RequestBody DispatchCandidateRequest request) {
+        return ApiResponse.success(dispatchCandidateService.findCandidates(request));
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<DispatchResponse> create(@Valid @RequestBody DispatchCreateRequest request) {
-        return ApiResponse.success(DispatchResponse.from(dispatchService.createDispatch(request)));
+    public ApiResponse<DispatchResponse> confirm(@Valid @RequestBody DispatchConfirmRequest request) {
+        return ApiResponse.success(DispatchResponse.from(dispatchConfirmService.confirm(request)));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<DispatchResponse> getOne(@PathVariable Long id) {
-        return ApiResponse.success(DispatchResponse.from(dispatchService.getDispatch(id)));
+    public ApiResponse<DispatchDetailResponse> getOne(@PathVariable Long id) {
+        var dispatch = dispatchService.getDispatchWithStops(id);
+        var history = dispatchStatusService.getHistory(id);
+        return ApiResponse.success(DispatchDetailResponse.of(dispatch, history));
     }
 
     @GetMapping
@@ -39,13 +50,21 @@ public class DispatchController {
         return ApiResponse.success(responses);
     }
 
-    @PatchMapping("/{id}/start")
-    public ApiResponse<DispatchResponse> start(@PathVariable Long id) {
-        return ApiResponse.success(DispatchResponse.from(dispatchService.startDispatch(id)));
+    @PostMapping("/{id}/route/optimize")
+    public ApiResponse<RouteOptimizeResponse> optimizeRoute(@PathVariable Long id) {
+        return ApiResponse.success(RouteOptimizeResponse.from(routeOptimizationService.optimize(id)));
     }
 
-    @PatchMapping("/{id}/complete")
-    public ApiResponse<DispatchResponse> complete(@PathVariable Long id) {
-        return ApiResponse.success(DispatchResponse.from(dispatchService.completeDispatch(id)));
+    @PatchMapping("/{id}/status")
+    public ApiResponse<DispatchResponse> changeStatus(@PathVariable Long id, @Valid @RequestBody DispatchStatusChangeRequest request) {
+        var dispatch = dispatchStatusService.changeStatus(
+                id, request.status(), request.expectedVersion(), request.actor(), request.description());
+        return ApiResponse.success(DispatchResponse.from(dispatch));
+    }
+
+    @PatchMapping("/{id}/stops/{stopId}")
+    public ApiResponse<RouteStopDto> changeStopStatus(@PathVariable Long id, @PathVariable Long stopId,
+                                                        @Valid @RequestBody RouteStopStatusChangeRequest request) {
+        return ApiResponse.success(RouteStopDto.from(routeStopService.changeStopStatus(id, stopId, request.status())));
     }
 }

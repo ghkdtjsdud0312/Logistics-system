@@ -10,4 +10,14 @@ public interface DispatchRepository {
     Optional<Dispatch> findById(Long id);
 
     List<Dispatch> findAll();
+
+    /** 완료되지 않은(COMPLETED가 아닌) 배차만 조회 - 일정 겹침 판단용 */
+    List<Dispatch> findActiveByVehicleId(Long vehicleId);
+
+    List<Dispatch> findActiveByDriverId(Long driverId);
+
+    boolean existsByOutboundIdsContaining(Long outboundId);
+
+    /** 이미 관리 중인(managed) 엔티티의 변경을 즉시 DB에 반영한다 (예: IDENTITY 자식의 id를 바로 사용해야 할 때). */
+    void flush();
 }
