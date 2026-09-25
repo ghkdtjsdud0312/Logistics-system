@@ -21,7 +21,7 @@ import java.util.List;
 public class TestData {
 
     private static final List<String> TABLES = List.of("stock_reservation", "picking_task", "packing_task", "shipment",
-            "dispatch", "order_item", "orders", "stock", "inbound", "product", "location", "zone", "warehouse",
+            "dispatch", "order_item", "orders", "stock", "inbound", "audit_log", "processed_event", "product", "location", "zone", "warehouse",
             "vehicle", "driver");
 
     private final ProductService productService;

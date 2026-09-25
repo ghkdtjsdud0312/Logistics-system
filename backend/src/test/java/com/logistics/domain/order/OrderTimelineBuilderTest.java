@@ -22,13 +22,13 @@ class OrderTimelineBuilderTest {
     }
 
     private long doneCount(Order order) {
-        return OrderTimelineBuilder.build(order).stream().filter(TimelineStep::done).count();
+        return OrderTimelineBuilder.build(order, java.util.Map.of()).stream().filter(TimelineStep::done).count();
     }
 
     @Test
     @DisplayName("타임라인은 7단계이고 현재 상태까지 완료로 표시한다")
     void progress() {
-        assertThat(OrderTimelineBuilder.build(orderIn(OrderStatus.RECEIVED))).hasSize(7);
+        assertThat(OrderTimelineBuilder.build(orderIn(OrderStatus.RECEIVED), java.util.Map.of())).hasSize(7);
         assertThat(doneCount(orderIn(OrderStatus.RECEIVED))).isEqualTo(1);
         assertThat(doneCount(orderIn(OrderStatus.PICKING))).isEqualTo(1);
         assertThat(doneCount(orderIn(OrderStatus.PICKED))).isEqualTo(2);
@@ -40,7 +40,7 @@ class OrderTimelineBuilderTest {
     @DisplayName("배송실패 주문은 배송완료 단계가 완료로 표시되지 않고 주문 시각은 접수 단계에 표시된다")
     void failed() {
         Order order = orderIn(OrderStatus.FAILED);
-        List<TimelineStep> steps = OrderTimelineBuilder.build(order);
+        List<TimelineStep> steps = OrderTimelineBuilder.build(order, java.util.Map.of());
 
         assertThat(steps.get(6).done()).isFalse();
         assertThat(steps.get(5).done()).isTrue();
