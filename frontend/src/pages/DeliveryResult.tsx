@@ -1,8 +1,21 @@
 import PageHeader from '@/components/common/PageHeader';
+import DeliveryResultTable from '@/components/shipping/DeliveryResultTable';
+import { useFetch } from '@/hooks/useFetch';
+import { getShipments } from '@/services/loadingService';
 
-/** 배송완료·실패 (뼈대) */
+/** 배송완료·실패: 배송중인 주문을 완료 또는 실패로 처리 */
 function DeliveryResultPage() {
-  return <PageHeader title="배송완료·실패" description="배송 완료 또는 실패를 처리합니다." />;
+  const { data, loading, reload } = useFetch(() => getShipments('IN_DELIVERY'));
+
+  return (
+    <>
+      <PageHeader
+        title="배송완료·실패"
+        description="인도수량이 배송수량과 같을 때만 배송완료 처리할 수 있습니다."
+      />
+      <DeliveryResultTable shipments={data ?? []} loading={loading} onChanged={reload} />
+    </>
+  );
 }
 
 export default DeliveryResultPage;
