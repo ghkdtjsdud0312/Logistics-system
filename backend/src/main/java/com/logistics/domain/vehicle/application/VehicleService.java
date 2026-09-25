@@ -36,6 +36,9 @@ public class VehicleService {
 
     @Transactional
     public Vehicle create(Vehicle vehicle) {
+        if (vehicleRepository.existsByVehicleNumber(vehicle.getVehicleNumber())) {
+            throw new BusinessException(ErrorCode.DUPLICATE_CODE);
+        }
         return vehicleRepository.save(vehicle);
     }
 

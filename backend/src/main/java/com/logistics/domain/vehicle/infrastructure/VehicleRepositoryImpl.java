@@ -31,6 +31,11 @@ public class VehicleRepositoryImpl implements VehicleRepository {
     }
 
     @Override
+    public boolean existsByVehicleNumber(String vehicleNumber) {
+        return vehicleJpaRepository.existsByVehicleNumber(vehicleNumber);
+    }
+
+    @Override
     public List<Vehicle> findAllByStatus(VehicleStatus status) {
         return vehicleJpaRepository.findAllByStatus(status);
     }

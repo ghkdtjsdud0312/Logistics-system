@@ -7,18 +7,11 @@ public record VehicleResponse(
         Long id,
         String vehicleNumber,
         String vehicleType,
-        double maxWeightKg,
-        double maxVolumeM3,
+        double capacityKg,
         VehicleStatus status
 ) {
     public static VehicleResponse from(Vehicle vehicle) {
-        return new VehicleResponse(
-                vehicle.getId(),
-                vehicle.getVehicleNumber(),
-                vehicle.getVehicleType(),
-                vehicle.getMaxWeightKg(),
-                vehicle.getMaxVolumeM3(),
-                vehicle.getStatus()
-        );
+        return new VehicleResponse(vehicle.getId(), vehicle.getVehicleNumber(),
+                vehicle.getVehicleType(), vehicle.getCapacityKg(), vehicle.getStatus());
     }
 }

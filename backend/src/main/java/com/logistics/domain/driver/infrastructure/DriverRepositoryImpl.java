@@ -31,6 +31,11 @@ public class DriverRepositoryImpl implements DriverRepository {
     }
 
     @Override
+    public boolean existsByDriverCode(String driverCode) {
+        return driverJpaRepository.existsByDriverCode(driverCode);
+    }
+
+    @Override
     public List<Driver> findAllByStatus(DriverStatus status) {
         return driverJpaRepository.findAllByStatus(status);
     }

@@ -17,21 +17,26 @@ public class Driver extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    private String driverCode;
+
     @Column(nullable = false)
     private String name;
 
-    /** 휴무 등 배차 불가 상태만 표현한다. 개별 배차 점유 여부는 배차 시간대 겹침으로 판단한다. */
+    private String phone;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DriverStatus status;
 
     @Builder
-    public Driver(String name) {
+    public Driver(String driverCode, String name, String phone) {
+        this.driverCode = driverCode;
         this.name = name;
+        this.phone = phone;
         this.status = DriverStatus.AVAILABLE;
     }
 
-    /** 휴무 등록/해제 등 운영자가 기사 가용 상태를 직접 전환할 때 사용 */
     public void changeStatus(DriverStatus status) {
         this.status = status;
     }

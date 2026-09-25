@@ -36,6 +36,9 @@ public class DriverService {
 
     @Transactional
     public Driver create(Driver driver) {
+        if (driverRepository.existsByDriverCode(driver.getDriverCode())) {
+            throw new BusinessException(ErrorCode.DUPLICATE_CODE);
+        }
         return driverRepository.save(driver);
     }
 
