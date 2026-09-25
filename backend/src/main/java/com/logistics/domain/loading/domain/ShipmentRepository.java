@@ -15,6 +15,8 @@ public interface ShipmentRepository {
 
     List<Shipment> findAllByDispatchId(Long dispatchId);
 
+    List<Shipment> findAllByOrderIds(Collection<Long> orderIds);
+
     /** status, dispatchId가 null이면 해당 조건 무시, 최신순 */
     List<Shipment> search(ShipmentStatus status, Long dispatchId);
 }

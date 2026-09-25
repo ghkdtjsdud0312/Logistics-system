@@ -34,6 +34,10 @@ public class ShipmentService {
         return shipments;
     }
 
+    public List<Shipment> getByOrderIds(Collection<Long> orderIds) {
+        return shipmentRepository.findAllByOrderIds(orderIds);
+    }
+
     public List<Shipment> getByDispatchId(Long dispatchId) {
         return shipmentRepository.findAllByDispatchId(dispatchId);
     }

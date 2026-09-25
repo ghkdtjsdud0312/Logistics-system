@@ -37,6 +37,11 @@ public class ShipmentRepositoryImpl implements ShipmentRepository {
     }
 
     @Override
+    public List<Shipment> findAllByOrderIds(Collection<Long> orderIds) {
+        return jpaRepository.findAllByOrderIdIn(orderIds);
+    }
+
+    @Override
     public List<Shipment> search(ShipmentStatus status, Long dispatchId) {
         if (status != null && dispatchId != null) {
             return jpaRepository.findAllByStatusAndDispatchIdOrderByIdDesc(status, dispatchId);

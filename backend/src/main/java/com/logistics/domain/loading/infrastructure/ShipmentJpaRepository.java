@@ -19,6 +19,8 @@ public interface ShipmentJpaRepository extends JpaRepository<Shipment, Long> {
 
     List<Shipment> findAllByDispatchIdOrderById(Long dispatchId);
 
+    List<Shipment> findAllByOrderIdIn(Collection<Long> orderIds);
+
     List<Shipment> findAllByOrderByIdDesc();
 
     List<Shipment> findAllByStatusOrderByIdDesc(ShipmentStatus status);
