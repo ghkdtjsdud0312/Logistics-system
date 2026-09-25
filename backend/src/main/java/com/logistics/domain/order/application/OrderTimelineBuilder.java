@@ -4,7 +4,9 @@ import com.logistics.domain.order.domain.Order;
 import com.logistics.domain.order.domain.OrderStatus;
 import com.logistics.domain.order.presentation.dto.TimelineStep;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static com.logistics.domain.order.domain.OrderStatus.*;
 
@@ -17,10 +19,11 @@ public final class OrderTimelineBuilder {
     private OrderTimelineBuilder() {
     }
 
-    public static List<TimelineStep> build(Order order) {
+    /** times는 단계별 실제 전이 시각(감사로그). 접수 단계는 없으면 주문 시각을 쓴다. */
+    public static List<TimelineStep> build(Order order, Map<OrderStatus, LocalDateTime> times) {
         return STEPS.stream()
                 .map(step -> new TimelineStep(step, isDone(order.getStatus(), step),
-                        step == RECEIVED ? order.getOrderedAt() : null))
+                        times.getOrDefault(step, step == RECEIVED ? order.getOrderedAt() : null)))
                 .toList();
     }
 

@@ -1,7 +1,6 @@
 package com.logistics.domain.order.presentation.dto;
 
 import com.logistics.domain.master.domain.Product;
-import com.logistics.domain.order.application.OrderTimelineBuilder;
 import com.logistics.domain.order.domain.Order;
 import com.logistics.domain.order.domain.OrderItem;
 import com.logistics.domain.order.domain.OrderStatus;
@@ -35,12 +34,12 @@ public record OrderDetailResponse(
     public record EventRow(LocalDateTime at, String description) {
     }
 
-    public static OrderDetailResponse of(Order order, Map<Long, Product> products,
+    public static OrderDetailResponse of(Order order, Map<Long, Product> products, List<TimelineStep> timeline,
                                          DeliveryInfo delivery, List<EventRow> events) {
         return new OrderDetailResponse(order.getId(), order.getOrderNo(), order.getStatus(),
                 order.getCustomerName(), order.getAddress(), order.getPhone(), order.getOrderedAt(),
                 order.getItems().stream().map(i -> itemRow(i, products.get(i.getProductId()))).toList(),
-                OrderTimelineBuilder.build(order), delivery, events);
+                timeline, delivery, events);
     }
 
     private static ItemRow itemRow(OrderItem item, Product product) {
