@@ -51,7 +51,7 @@ domain/{domain_name}/
 - **인증(로그인)**: 구현 범위에서 전면 제외합니다. 모든 페이지는 로그인 없이 접근 가능합니다.
 - **런타임 및 빌드**: Vite + Yarn (npm 사용 절대 금지, ESLint + Prettier 적용)
 - **프레임워크 및 라우팅**: React 18+, TypeScript, React Router v6+
-- **스타일링 및 알림**: Tailwind CSS, Sonner (Three.js 및 Axios는 추후 추가하므로 설치 금지)
+- **스타일링 및 알림**: Tailwind CSS, Sonner (Axios는 API 호출용으로 설치됨, Three.js는 2026-09-26 사용자 요청으로 추가됨 — ADR-021. 그 외 새 라이브러리는 승인 후 추가)
 
 ### 2. 엄격한 파일 분리 및 폴더 격리 규칙 (Strict Code Separation)
 AI는 코드를 작성할 때 생산 편의성을 이유로 단일 파일에 여러 역할의 코드를 몰아넣지 마십시오.
