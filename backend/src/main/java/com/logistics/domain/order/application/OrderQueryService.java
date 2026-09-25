@@ -6,6 +6,7 @@ import com.logistics.domain.order.domain.Order;
 import com.logistics.domain.order.domain.OrderRepository;
 import com.logistics.domain.order.domain.OrderSearchCriteria;
 import com.logistics.domain.order.presentation.dto.OrderDetailResponse;
+import com.logistics.domain.order.presentation.dto.OrderDetailResponse.DeliveryInfo;
 import com.logistics.domain.order.presentation.dto.OrderListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,16 +26,26 @@ public class OrderQueryService {
     private final OrderRepository orderRepository;
     private final OrderService orderService;
     private final ProductService productService;
+    private final OrderDeliveryProvider deliveryProvider;
 
     public List<OrderListResponse> search(OrderSearchCriteria criteria) {
         List<Order> orders = orderRepository.search(criteria);
         Map<Long, Product> products = productMap(orders);
-        return orders.stream().map(o -> OrderListResponse.of(o, products, null)).toList();
+        Map<Long, OrderDeliveryView> deliveries = deliveryProvider.findByOrderIds(
+                orders.stream().map(Order::getId).collect(Collectors.toSet()));
+        return orders.stream().map(o -> OrderListResponse.of(o, products, statusOf(deliveries.get(o.getId())))).toList();
     }
 
     public OrderDetailResponse getDetail(Long id) {
         Order order = orderService.get(id);
-        return OrderDetailResponse.of(order, productMap(List.of(order)), null, List.of());
+        OrderDeliveryView view = deliveryProvider.findByOrderIds(List.of(id)).get(id);
+        DeliveryInfo delivery = view == null || view.vehicleNumber() == null ? null : new DeliveryInfo(
+                view.vehicleNumber(), view.driverName(), view.plannedStartAt(), view.startedAt());
+        return OrderDetailResponse.of(order, productMap(List.of(order)), delivery, List.of());
+    }
+
+    private String statusOf(OrderDeliveryView view) {
+        return view == null ? null : view.shipmentStatus();
     }
 
     private Map<Long, Product> productMap(Collection<Order> orders) {
