@@ -5,6 +5,7 @@ import com.logistics.domain.master.application.ProductService;
 import com.logistics.domain.order.domain.Order;
 import com.logistics.domain.order.domain.OrderItem;
 import com.logistics.domain.order.domain.OrderRepository;
+import com.logistics.domain.order.domain.OrderSearchCriteria;
 import com.logistics.domain.order.domain.OrderStatus;
 import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
@@ -46,6 +47,11 @@ public class OrderService {
         eventPublisher.publish("ORDER", order.getId(), order.getOrderNo(), order.getId(),
                 "CREATE", null, OrderStatus.RECEIVED.name());
         return order;
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<Order> findByStatus(OrderStatus status) {
+        return orderRepository.search(new OrderSearchCriteria(null, null, status, null, null, 0, 200));
     }
 
     @Transactional(readOnly = true)
