@@ -1,8 +1,57 @@
+import { useState } from 'react';
 import PageHeader from '@/components/common/PageHeader';
+import Section from '@/components/common/Section';
+import ProgressChart from '@/components/dashboard/ProgressChart';
+import RecentEvents from '@/components/dashboard/RecentEvents';
+import StatCards from '@/components/dashboard/StatCards';
+import DeliveryCard from '@/components/shipping/DeliveryCard';
+import { useFetch } from '@/hooks/useFetch';
+import { useLogisticsEvents } from '@/hooks/useLogisticsEvents';
+import {
+  getDashboardEvents,
+  getDashboardSummary,
+  getDashboardVehicles,
+} from '@/services/dashboardService';
+import { DashboardEvent } from '@/types/dashboard';
+import { mergeEvents } from '@/utils/events';
 
-/** 대시보드 (뼈대) */
+/** 대시보드: 오늘의 물류 현황. 상태가 바뀌면 SSE로 실시간 갱신한다. */
 function DashboardPage() {
-  return <PageHeader title="대시보드" description="오늘의 물류 현황을 한눈에 확인합니다." />;
+  const summary = useFetch(getDashboardSummary);
+  const vehicles = useFetch(getDashboardVehicles);
+  const events = useFetch(() => getDashboardEvents(10));
+  const [live, setLive] = useState<DashboardEvent[]>([]);
+
+  useLogisticsEvents((event) => {
+    setLive((prev) => [event, ...prev].slice(0, 10));
+    summary.reload();
+    vehicles.reload();
+  });
+
+  return (
+    <>
+      <PageHeader title="대시보드" description="오늘의 물류 현황 (실시간)" />
+      {summary.data && <StatCards summary={summary.data} />}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Section title="물류 진행 현황">
+          {summary.data && <ProgressChart progress={summary.data.progress} />}
+        </Section>
+        <Section title="차량 배송 현황">
+          {(vehicles.data ?? []).length === 0 && (
+            <p className="text-sm text-gray-400">진행 중인 배송이 없습니다.</p>
+          )}
+          <div className="space-y-3">
+            {(vehicles.data ?? []).map((b) => (
+              <DeliveryCard key={b.dispatchId} board={b} />
+            ))}
+          </div>
+        </Section>
+      </div>
+      <Section title="최근 물류 이벤트">
+        <RecentEvents events={mergeEvents(live, events.data ?? [])} />
+      </Section>
+    </>
+  );
 }
 
 export default DashboardPage;
