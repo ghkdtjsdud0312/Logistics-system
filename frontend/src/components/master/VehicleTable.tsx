@@ -7,7 +7,7 @@ import { Vehicle } from '@/types/vehicle';
 const COLUMNS: Column<Vehicle>[] = [
   { header: '차량번호', render: (v) => v.vehicleNumber },
   { header: '차량종류', render: (v) => v.vehicleType },
-  { header: '적재량', render: (v) => `${v.capacityKg}kg` },
+  { header: '적재량', align: 'right', render: (v) => `${v.capacityKg}kg` },
   {
     header: '상태',
     render: (v) => (

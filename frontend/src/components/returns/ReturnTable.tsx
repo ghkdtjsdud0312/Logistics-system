@@ -21,7 +21,7 @@ function ReturnTable({ returns, locations, loading, onChanged }: ReturnTableProp
     { header: '고객', render: (r) => r.customerName },
     { header: '상품', render: (r) => r.items },
     { header: '사유', render: (r) => FAIL_REASON_LABEL[r.reason] },
-    { header: '수량', render: (r) => r.quantity },
+    { header: '수량', align: 'right', render: (r) => r.quantity },
     {
       header: '상태',
       render: (r) => (

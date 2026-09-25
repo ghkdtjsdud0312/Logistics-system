@@ -18,8 +18,8 @@ function PickingTable({ tasks, loading, onChanged }: PickingTableProps) {
     { header: '주문번호', render: (t) => t.orderNo },
     { header: '위치', render: (t) => t.locationCode },
     { header: '상품', render: (t) => t.productName },
-    { header: '요청수량', render: (t) => t.requestedQty },
-    { header: '피킹수량', render: (t) => t.pickedQty },
+    { header: '요청수량', align: 'right', render: (t) => t.requestedQty },
+    { header: '피킹수량', align: 'right', render: (t) => t.pickedQty },
     {
       header: '상태',
       render: (t) => (

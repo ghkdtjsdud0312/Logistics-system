@@ -19,8 +19,8 @@ function DispatchTable({ dispatches, loading, onChanged }: DispatchTableProps) {
     { header: '차량', render: (d) => d.vehicleNumber },
     { header: '기사', render: (d) => d.driverName },
     { header: '출발예정', render: (d) => formatDateTime(d.plannedStartAt) },
-    { header: '배송건수', render: (d) => d.shipmentCount },
-    { header: '총 중량', render: (d) => `${d.totalWeightKg}kg` },
+    { header: '배송건수', align: 'right', render: (d) => d.shipmentCount },
+    { header: '총 중량', align: 'right', render: (d) => `${d.totalWeightKg}kg` },
     {
       header: '상태',
       render: (d) => (

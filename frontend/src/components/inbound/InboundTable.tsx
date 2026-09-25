@@ -19,7 +19,7 @@ function InboundTable({ inbounds, locations, loading, onChanged }: InboundTableP
     { header: '거래처', render: (i) => i.partnerName },
     { header: '입고일', render: (i) => i.inboundDate },
     { header: '상품', render: (i) => i.productName },
-    { header: '수량', render: (i) => i.quantity },
+    { header: '수량', align: 'right', render: (i) => i.quantity },
     {
       header: '상태',
       render: (i) => (

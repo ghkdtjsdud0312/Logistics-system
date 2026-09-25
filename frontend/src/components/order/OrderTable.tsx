@@ -12,7 +12,7 @@ const COLUMNS: Column<OrderListItem>[] = [
   { header: '주문번호', render: (o) => o.orderNo },
   { header: '고객명', render: (o) => o.customerName },
   { header: '상품', render: (o) => o.productSummary },
-  { header: '수량', render: (o) => o.quantity },
+  { header: '수량', align: 'right', render: (o) => o.quantity },
   { header: '주문일', render: (o) => formatDateTime(o.orderedAt) },
   {
     header: '현재상태',

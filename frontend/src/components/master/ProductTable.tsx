@@ -7,7 +7,7 @@ const COLUMNS: Column<Product>[] = [
   { header: '상품코드', render: (p) => p.code },
   { header: '상품명', render: (p) => p.name },
   { header: '단위', render: (p) => p.unit },
-  { header: '단위 중량(kg)', render: (p) => p.unitWeightKg },
+  { header: '단위 중량(kg)', align: 'right', render: (p) => p.unitWeightKg },
   {
     header: '상태',
     render: (p) => (

@@ -15,7 +15,7 @@ function DeliveryResultTable({ shipments, loading, onChanged }: DeliveryResultTa
     { header: '주문번호', render: (s) => s.orderNo },
     { header: '고객', render: (s) => s.customerName },
     { header: '배송지', render: (s) => s.address },
-    { header: '배송수량', render: (s) => s.quantity },
+    { header: '배송수량', align: 'right', render: (s) => s.quantity },
     {
       header: '처리(인도수량)',
       render: (s) => <DeliveryResultActions shipment={s} onChanged={onChanged} />,
