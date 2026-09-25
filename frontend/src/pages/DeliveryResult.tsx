@@ -2,11 +2,13 @@ import PageHeader from '@/components/common/PageHeader';
 import { PAGE_NEXT } from '@/constants/nextStep';
 import DeliveryResultTable from '@/components/shipping/DeliveryResultTable';
 import { useFetch } from '@/hooks/useFetch';
+import { useRefreshOnEvents } from '@/hooks/useRefreshOnEvents';
 import { getShipments } from '@/services/loadingService';
 
 /** 배송완료·실패: 배송중인 주문을 완료 또는 실패로 처리 */
 function DeliveryResultPage() {
   const { data, loading, reload } = useFetch(() => getShipments('IN_DELIVERY'));
+  useRefreshOnEvents(reload);
 
   return (
     <>
