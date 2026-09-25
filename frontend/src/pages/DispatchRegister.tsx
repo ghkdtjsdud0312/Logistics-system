@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import CheckList from '@/components/common/CheckList';
 import PageHeader from '@/components/common/PageHeader';
+import { PAGE_NEXT } from '@/constants/nextStep';
 import Section from '@/components/common/Section';
 import DispatchForm from '@/components/shipping/DispatchForm';
 import DispatchTable from '@/components/shipping/DispatchTable';
@@ -28,7 +29,11 @@ function DispatchRegisterPage() {
 
   return (
     <>
-      <PageHeader title="배차관리" description="상차가 끝난 물량을 차량·기사와 연결합니다." />
+      <PageHeader
+        title="배차관리"
+        next={PAGE_NEXT.DISPATCH}
+        description="상차가 끝난 물량을 차량·기사와 연결합니다."
+      />
       <Section title="배차 대기">
         <CheckList
           emptyText="배차 대기 중인 배송이 없습니다."

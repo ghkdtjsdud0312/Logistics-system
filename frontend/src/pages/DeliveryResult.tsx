@@ -1,4 +1,5 @@
 import PageHeader from '@/components/common/PageHeader';
+import { PAGE_NEXT } from '@/constants/nextStep';
 import DeliveryResultTable from '@/components/shipping/DeliveryResultTable';
 import { useFetch } from '@/hooks/useFetch';
 import { getShipments } from '@/services/loadingService';
@@ -11,6 +12,7 @@ function DeliveryResultPage() {
     <>
       <PageHeader
         title="배송완료·실패"
+        next={PAGE_NEXT.DELIVERY_RESULT}
         description="인도수량이 배송수량과 같을 때만 배송완료 처리할 수 있습니다."
       />
       <DeliveryResultTable shipments={data ?? []} loading={loading} onChanged={reload} />

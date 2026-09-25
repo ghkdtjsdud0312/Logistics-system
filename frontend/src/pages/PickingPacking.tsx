@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PageHeader from '@/components/common/PageHeader';
+import { PAGE_NEXT } from '@/constants/nextStep';
 import Tabs from '@/components/common/Tabs';
 import PackingTable from '@/components/work/PackingTable';
 import PickingTable from '@/components/work/PickingTable';
@@ -25,6 +26,7 @@ function PickingPackingPage() {
     <>
       <PageHeader
         title="피킹·포장"
+        next={PAGE_NEXT.WAREHOUSE_WORK}
         description="출고 지시된 주문의 피킹 작업과 포장 작업을 처리합니다."
       />
       <Tabs tabs={TABS} active={tab} onChange={setTab} />
