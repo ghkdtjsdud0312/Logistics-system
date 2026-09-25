@@ -38,6 +38,17 @@ public enum ErrorCode {
     PICKED_QTY_MISMATCH(HttpStatus.UNPROCESSABLE_ENTITY, "WK003", "피킹수량이 요청수량과 다릅니다."),
     PICKED_QTY_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "WK004", "피킹수량이 요청수량을 초과했습니다."),
 
+    // Loading / Dispatch
+    ORDER_NOT_PACKED(HttpStatus.CONFLICT, "LD001", "포장이 완료된 주문만 상차할 수 있습니다."),
+    SHIPMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "LD002", "배송 정보를 찾을 수 없습니다."),
+    INVALID_SHIPMENT_TRANSITION(HttpStatus.CONFLICT, "LD003", "허용되지 않은 배송 상태 전이입니다."),
+    SHIPMENT_ALREADY_DISPATCHED(HttpStatus.CONFLICT, "DP001", "이미 배차되었거나 상차되지 않은 배송입니다."),
+    DISPATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "DP002", "배차 정보를 찾을 수 없습니다."),
+    INVALID_DISPATCH_TRANSITION(HttpStatus.CONFLICT, "DP003", "허용되지 않은 배차 상태 전이입니다."),
+    VEHICLE_OVERLOAD(HttpStatus.UNPROCESSABLE_ENTITY, "DP004", "차량 적재량을 초과했습니다."),
+    VEHICLE_UNAVAILABLE(HttpStatus.CONFLICT, "DP005", "선택한 차량은 배차할 수 없는 상태입니다."),
+    DRIVER_UNAVAILABLE(HttpStatus.CONFLICT, "DP006", "선택한 기사는 배차할 수 없는 상태입니다."),
+
     // Inventory
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "IV001", "가용 재고가 부족합니다."),
 
