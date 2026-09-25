@@ -32,6 +32,12 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "OD001", "주문 정보를 찾을 수 없습니다."),
     INVALID_ORDER_TRANSITION(HttpStatus.CONFLICT, "OD002", "허용되지 않은 주문 상태 전이입니다."),
 
+    // Warehouse work
+    WORK_TASK_NOT_FOUND(HttpStatus.NOT_FOUND, "WK001", "작업 정보를 찾을 수 없습니다."),
+    INVALID_TASK_TRANSITION(HttpStatus.CONFLICT, "WK002", "허용되지 않은 작업 상태 전이입니다."),
+    PICKED_QTY_MISMATCH(HttpStatus.UNPROCESSABLE_ENTITY, "WK003", "피킹수량이 요청수량과 다릅니다."),
+    PICKED_QTY_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "WK004", "피킹수량이 요청수량을 초과했습니다."),
+
     // Inventory
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "IV001", "가용 재고가 부족합니다."),
 
