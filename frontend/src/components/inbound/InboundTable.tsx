@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import DataTable from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
 import InboundActions from '@/components/inbound/InboundActions';
@@ -29,6 +30,14 @@ function InboundTable({ inbounds, locations, loading, onChanged }: InboundTableP
     {
       header: '처리',
       render: (i) => <InboundActions inbound={i} locations={locations} onChanged={onChanged} />,
+    },
+    {
+      header: '상세',
+      render: (i) => (
+        <Link className="text-primary" to={`/warehouse/inbounds/${i.id}`}>
+          상세
+        </Link>
+      ),
     },
   ];
   return <DataTable columns={columns} rows={inbounds} rowKey={(i) => i.id} loading={loading} />;

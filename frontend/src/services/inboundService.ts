@@ -5,6 +5,8 @@ import { Inbound, InboundCreate } from '@/types/inbound';
 export const getInbounds = (status?: string) =>
   unwrap<Inbound[]>(apiClient.get('/inbounds', { params: { status: status || undefined } }));
 
+export const getInbound = (id: number) => unwrap<Inbound>(apiClient.get(`/inbounds/${id}`));
+
 export const createInbound = (body: InboundCreate) =>
   unwrap<Inbound>(apiClient.post('/inbounds', body));
 
