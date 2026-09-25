@@ -2,55 +2,69 @@
 
 ## 원칙
 
-- 각 엔티티는 데이터 성격에 따라 테이블로 매핑되며, Modular Monolith 원칙에 따라 도메인 간 물리적 Foreign Key Join은 최소화하고 논리적 ID 참조를 지향한다.
-- 캐시 저장소(Redis)의 Cache-Aside 정책은 `ARCHITECTURE.md`의 캐시 정책 절을 따른다.
+- 도메인 간 물리적 Foreign Key와 JPA 연관은 두지 않고 ID 컬럼(논리 참조)만 둔다. 같은 도메인 내부(예: order → order_item)는 FK 허용.
+- 식별자는 `Long` PK + 업무번호(`order_no` 등, UNIQUE). 기존 코드 관행을 따른다.
+- 시간은 `timestamptz`(애플리케이션 UTC), 중량 `numeric(12,3)`, 상태는 문자열 enum.
+- 재고·주문·배차 등 갱신 Aggregate는 `version`(낙관적 잠금).
+- 스키마 관리 방식(현재 `ddl-auto: validate`)은 미결정 항목이다(`DECISION_LOG.md`).
 
 ## 테이블 개요
 
-| 테이블 | 주요 컬럼 | 핵심 제약 |
+### master
+| 테이블 | 주요 컬럼 | 제약 |
 |---|---|---|
-| partner | id, name, code | code UNIQUE |
-| inbound | id, partner_id, status, expected_at, completed_at | status CHECK |
-| inbound_item | id, inbound_id, sku, expected_qty, inspected_qty, unit_weight_kg, unit_volume_m3 | 수량/단위값 >= 0 |
-| outbound_plan | id, status, destination_name, x, y, priority, requested_delivery_at | 좌표 NOT NULL |
-| outbound_item | id, outbound_plan_id, inbound_item_id, quantity | quantity > 0 |
-| vehicle | id, plate_number, type, max_weight_kg, max_volume_m3, status | plate_number UNIQUE |
-| driver | id, name, status | MVP 개인정보 최소화 |
-| dispatch | id, vehicle_id, driver_id, status, planned_start_at, total_weight_kg, total_volume_m3 | 낙관적 잠금 version |
-| dispatch_outbound | dispatch_id, outbound_plan_id | 활성 중복은 서비스+잠금으로 차단 |
-| route_stop | id, dispatch_id, outbound_plan_id, sequence_no, status, distance_from_previous | (dispatch_id, sequence_no) UNIQUE |
-| dispatch_history | id, dispatch_id, from_status, to_status, actor, occurred_at, description | append-only |
-| anomaly | id, dispatch_id, type, severity, status, detected_at, fingerprint | fingerprint UNIQUE |
-| processed_event | consumer_name, event_id, processed_at | 복합 PK, 멱등 Consumer |
+| product | id, code, name, unit, unit_weight_kg, active | code UNIQUE |
+| warehouse | id, code, name | code UNIQUE |
+| zone | id, warehouse_id, code, name | (warehouse_id, code) UNIQUE |
+| location | id, zone_id, code | code UNIQUE (`A-01-01`) |
+| vehicle | id, vehicle_number, vehicle_type, capacity_kg, status | number UNIQUE (기존 재사용) |
+| driver | id, driver_code, name, phone, status | code UNIQUE (기존 재사용) |
 
-### 실제 구현 (입고/출고, 단순화 버전)
-
-| 테이블 | 주요 컬럼 | 핵심 제약 |
+### 입고·재고
+| 테이블 | 주요 컬럼 | 제약 |
 |---|---|---|
-| inbound | id, item_name, quantity, warehouse_location, status, inspected_quantity | inspected_quantity는 COMPLETED 전엔 null |
-| outbound | id, destination, status | items로 물량 구성, 자체 quantity 컬럼 없음 |
-| outbound_item | id, outbound_id(FK), inbound_id(FK 아님, ID 참조), quantity | outbound_id는 outbound 소속(같은 도메인), inbound_id는 타 도메인이라 FK 미설정 |
+| inbound | id, inbound_no, partner_name, product_id, quantity, status, inbound_date, location_id(적치 위치, null 가능) | quantity > 0 |
+| stock | id, product_id, location_id, on_hand, reserved, version | (product_id, location_id) UNIQUE, on_hand >= reserved >= 0 |
 
-## 데이터 타입 원칙
+### 주문·작업
+| 테이블 | 주요 컬럼 | 제약 |
+|---|---|---|
+| orders | id, order_no, customer_name, address, phone, status, ordered_at, version | order_no UNIQUE |
+| order_item | id, order_id(FK), product_id, quantity, picked_qty, loaded_qty, delivered_qty | quantity > 0 |
+| stock_reservation | id, order_item_id, location_id, quantity | quantity > 0 |
+| picking_task | id, task_no, order_id, location_id, product_id, requested_qty, picked_qty, status | picked_qty <= requested_qty |
+| packing_task | id, task_no, order_id, box_code, status | order_id UNIQUE |
 
-- 식별자: UUID
-- 시간: `timestamptz`, 애플리케이션 UTC
-- 중량/부피/거리: `numeric(12,3)`
-- 상태: 문자열 enum + 애플리케이션 검증
-- 낙관적 잠금: 주요 Aggregate에 `version` 컬럼
+### 상차·배차·배송
+| 테이블 | 주요 컬럼 | 제약 |
+|---|---|---|
+| shipment | id, order_id, dispatch_id(null), status, delivered_at, fail_reason, fail_detail | order_id UNIQUE |
+| dispatch | id, dispatch_no, vehicle_id, driver_id, status, planned_start_at, planned_arrival_at, started_at, version | dispatch_no UNIQUE |
+
+### 반품·감사·이벤트
+| 테이블 | 주요 컬럼 | 제약 |
+|---|---|---|
+| return_order | id, return_no, order_id, shipment_id, reason, quantity, status, location_id(null) | |
+| audit_log | id, occurred_at, actor, target_type, target_id, target_no, order_id(null), action, from_status, to_status | append-only |
+| processed_event | consumer_name, event_id, processed_at | 복합 PK |
 
 ## 인덱스
 
-- `inbound(status, expected_at)`
-- `outbound_plan(status, requested_delivery_at)`
-- `vehicle(status)`
-- `dispatch(status, planned_start_at)`
-- `dispatch_history(dispatch_id, occurred_at)`
-- `anomaly(status, detected_at)`
+- `orders(status, ordered_at)`, `orders(customer_name)`
+- `stock(product_id)`, `picking_task(order_id)`, `picking_task(status)`
+- `shipment(dispatch_id)`, `shipment(status)`
+- `dispatch(status)`
+- `audit_log(order_id, occurred_at)`, `audit_log(occurred_at)`
 
-## 마이그레이션 규칙
+## 기존 테이블 처리
 
-- Flyway만 사용하고 이미 적용된 파일을 수정하지 않는다.
-- 파괴적 변경은 승인 게이트다.
-- 테스트 스키마도 운영과 동일한 PostgreSQL을 사용한다.
+| 기존 | 처리 |
+|---|---|
+| vehicle, driver | 재사용(컬럼 조정 필요 시 승인 게이트) |
+| inbound | 재정의(컬럼·상태 변경 필요) |
+| outbound, outbound_item | 폐기 예정 |
+| dispatch, route_stop, dispatch_status_history/projection | 재정의 또는 폐기 |
+| anomaly, event_cursor | 폐기 예정 |
+| delivery | 재정의(Shipment로 대체) 또는 폐기 |
 
+코드 정리는 별도 승인 후 진행한다. 파괴적 변경은 승인 게이트다.

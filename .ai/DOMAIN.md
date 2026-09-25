@@ -1,91 +1,96 @@
 # DOMAIN
 
-## Aggregate와 책임
+## 도메인(패키지)과 Aggregate
 
-| Aggregate | 책임 | 주요 불변식 |
-|---|---|---|
-| Inbound | 입고 예정·검수·완료 | 완료 후 검수값 변경 금지 |
-| OutboundPlan | 출고 대상과 배송지 묶음 | 완료 입고 물량만 포함, 수량 초과 금지 |
-| Vehicle | 차량 적재능력·가용 상태 | 최대 중량/부피는 양수 |
-| Driver | 기사 가용 상태 | 동일 시간대 활성 배차 1개 |
-| Dispatch | 물량·차량·기사·경로 연결 | 과적·중복 할당 금지 |
-| Route | 방문 순서와 거리 | 모든 배송지 1회 포함 |
-| Anomaly | 운영 이상과 처리 상태 | 동일 원인 중복 알림 억제 |
+| 도메인 | Aggregate | 책임 | 주요 불변식 |
+|---|---|---|---|
+| master | Product, Warehouse(구역·위치), Vehicle, Driver | 기준정보 | 코드 UNIQUE, 적재량·단위중량은 양수 |
+| inbound | Inbound | 입고·적치 | 적치는 입고완료 이후 1개 위치로만 |
+| inventory | Stock(상품+위치), | 현재/예약/가용 재고 | `reserved <= onHand`, 음수 금지 |
+| order | Order(+OrderItem) | 주문과 주문 상태 | 상태 전이 순서 강제, 수량 양수 |
+| warehouse-work | PickingTask, PackingTask | 피킹·포장 작업 | 피킹수량 == 요청수량일 때만 완료 |
+| loading | Shipment | 상차와 주문별 배송 단위 | 포장완료 주문만 상차 |
+| dispatch | Dispatch | 차량·기사와 Shipment 묶음 | 적재량 초과·중복 배정 금지 |
+| delivery | (Shipment 상태 처리) | 배송 시작·완료·실패 | 인도수량 == 배송수량일 때만 완료 |
+| returns | Return | 회수 흐름과 재고 복구 | 파손 사유는 재고 복구 금지 |
+| audit | AuditLog | 상태 변경 이력 | append-only |
+| dashboard | (조회 전용) | 집계·차량 현황·최근 이벤트 | 쓰기 없음 |
+
+도메인 간 협력은 ID 참조와 Application Service 호출, Kafka 이벤트로만 한다(ADR-011).
 
 ## 상태 머신
 
+### OrderStatus
+
+`RECEIVED(주문접수) → OUTBOUND_WAITING(출고대기) → PICKING(피킹중) → PICKED(피킹완료) → PACKED(포장완료) → LOADED(상차완료) → DISPATCHED(배차완료) → IN_DELIVERY(배송중) → DELIVERED(배송완료) | FAILED(배송실패)`
+
+- 주문 생성 = 주문접수(재고 예약 성공 시). 출고 지시 = 출고대기(피킹 작업 생성). 첫 피킹 작업 시작 = 피킹중. 모든 피킹 작업 완료 = 피킹완료(포장 작업 생성).
+- `DELIVERED`, `FAILED`는 종결. 종결 상태에서 이동할 수 없다.
+
 ### InboundStatus
 
-`EXPECTED → INSPECTING → COMPLETED`
+`EXPECTED(입고예정) → RECEIVED(입고완료) → PUTAWAY_WAITING(적치대기) → PUTAWAY_DONE(적치완료)`
 
-취소가 필요하면 `EXPECTED` 또는 `INSPECTING`에서만 `CANCELLED`로 이동할 수 있다.
+- 입고완료(검수·수량 확정) 처리 직후 적치대기가 되고, 적치 위치를 지정하면 적치완료가 되며 재고가 증가한다.
 
-### OutboundStatus
+### 작업 상태
 
-`DRAFT → READY → ASSIGNED → LOADED → RELEASED`
+- PickingTask: `WAITING → IN_PROGRESS → COMPLETED`
+- PackingTask: `WAITING → COMPLETED`
+- Shipment: `LOADED(상차완료) → DISPATCHED(배차완료) → IN_DELIVERY(배송중) → DELIVERED | FAILED`
 
 ### DispatchStatus
 
-`DRAFT → CONFIRMED → LOADED → IN_TRANSIT → COMPLETED`
+`REGISTERED(배차완료) → IN_TRANSIT(배송중) → COMPLETED`
 
-- `DRAFT → CANCELLED`, `CONFIRMED → CANCELLED`만 허용한다.
-- `COMPLETED`와 `CANCELLED`는 종결 상태다.
-- 종결 상태에서 다른 상태로 이동할 수 없다.
+- 소속 Shipment가 모두 종결(`DELIVERED`/`FAILED`)되면 자동으로 `COMPLETED`.
+- 배송 시작 전(`REGISTERED`)에만 취소 가능(`CANCELLED`). 취소 시 Shipment는 `LOADED`로, 주문은 `LOADED`로 되돌린다.
 
-### StopStatus
+### 차량·기사 상태
 
-`PENDING → ARRIVED → DELIVERED`
+- Vehicle: `AVAILABLE(운행가능) / IN_OPERATION(운행중) / MAINTENANCE / INACTIVE`
+- Driver: `AVAILABLE(운행가능) / DELIVERING(배송중) / OFF`
+- 배차 등록 시 활성 배차 중복 여부를 검사하고, 배송 시작 시 `IN_OPERATION`/`DELIVERING`, 배차 완료 시 `AVAILABLE`로 복귀한다.
 
-배송 실패는 `ARRIVED → FAILED`로 기록하며 운영자가 재시도 정책을 결정한다. MVP에서는 자동 재배차하지 않는다.
+### ReturnStatus
 
-## 실제 구현 (입고/출고, 단순화 버전)
+`REQUESTED(회수요청) → COLLECTING(회수중) → COLLECTED(회수완료) → RETURN_RECEIVED(반품입고) → COMPLETED(처리완료)`
 
-현재 코드의 상태 머신은 위 이론 모델보다 단순하다.
-
-- `InboundStatus`: `REQUESTED(입고 요청) → IN_PROGRESS(입고 처리) → COMPLETED(검수 완료, inspectedQuantity 기록)`, `CANCELLED`는 COMPLETED 전 언제든 가능.
-- `OutboundStatus`: `REQUESTED(출고 계획) → PICKING(피킹) → SHIPPED(출고 완료)`, `CANCELLED`는 SHIPPED 전 언제든 가능.
-- `Outbound`는 하나의 출고 계획이 여러 `Inbound`의 물량을 합쳐 구성할 수 있다(1:N). `OutboundItem{outboundId, inboundId, quantity}`로 표현하며, `inboundId`는 다른 도메인의 ID 참조일 뿐 FK나 JPA 연관관계를 걸지 않는다.
-- 출고 생성 시 각 item마다 `Inbound.status == COMPLETED`이고 `inspectedQuantity - 이미 배정된 수량 >= 요청 수량`인지 검증한다. `OutboundService`는 `InboundRepository`를 직접 주입받지 않고 `InboundService`(Application Service)를 통해서만 Inbound 정보를 조회한다.
-
-## 배차 가능성 규칙
-
-차량 `v`와 출고 계획 집합 `O`에 대해 다음을 모두 만족해야 한다.
+## 재고 규칙
 
 ```text
-sum(O.weightKg) <= v.maxWeightKg
-sum(O.volumeM3) <= v.maxVolumeM3
-v.status == AVAILABLE
-driver.status == AVAILABLE
-no schedule overlap
-no outbound plan assigned to another active dispatch
+가용재고 = 현재재고(onHand) - 예약재고(reserved)
 ```
 
-후보 정렬 점수는 MVP에서 다음처럼 단순화한다.
+| 시점 | onHand | reserved |
+|---|---|---|
+| 적치완료 | + 입고수량 | - |
+| 주문 생성(예약) | - | + 주문수량 (위치별 배분) |
+| 피킹완료 | − 피킹수량 | − 피킹수량 |
+| 반품입고(파손 아님) | + 반품수량 | - |
+
+- 예약 배분은 가용재고가 있는 위치를 위치 코드 순으로 채운다. 총 가용재고가 부족하면 주문 전체를 거절한다.
+- 재고 행은 낙관적 잠금(`version`)으로 동시 갱신을 보호한다.
+
+## 수량 규칙
+
+주문수량 ≥ 피킹수량 = 상차수량 = 배송수량 ≥ 인도수량. 이번 범위에서는 부분 처리를 허용하지 않으므로 완료 시점에 모두 같다(ADR-013). 주문 상세의 "출고수량" 컬럼은 `상차수량`으로 표기한다.
+
+## 배차 규칙
 
 ```text
-unusedWeightRatio + unusedVolumeRatio + distanceFromHubPenalty
+sum(shipment.items.quantity * product.unitWeightKg) <= vehicle.capacityKg
+vehicle.status == AVAILABLE && driver.status == AVAILABLE
+vehicle/driver가 REGISTERED 또는 IN_TRANSIT 배차에 속하지 않음
+shipment.status == LOADED (다른 배차에 속하지 않음)
 ```
 
-점수가 낮을수록 적합하다. 자동 확정하지 않고 담당자가 선택한다.
+## 배송 실패와 반품
 
-## 경로 규칙
+- 실패 사유: `CUSTOMER_ABSENT(고객 부재)`, `ADDRESS_ERROR(주소 오류)`, `REFUSED(수취 거부)`, `DAMAGED(상품 파손)`, `OTHER(기타)` + 상세 내용.
+- 실패 처리 시 Shipment·주문은 `FAILED`가 되고 반품(`REQUESTED`)이 자동 생성된다. 재배송은 없다.
+- 반품입고 시 사유가 `DAMAGED`가 아니면 지정 위치에 재고를 복구한다.
 
-1. 허브를 시작점으로 Nearest Neighbor 초기 경로를 만든다.
-2. 2-opt 교환을 반복해 총 거리가 더 짧아질 때만 반영한다.
-3. 동일 입력과 동일 tie-breaker에는 동일 결과를 반환한다.
-4. `optimizedDistance <= initialDistance`를 보장한다.
+## 감사로그
 
-## 참고: Delivery 도메인과의 관계
-
-실제 백엔드 코드(`backend/src/main/java/com/logistics/domain/delivery`)는 배송/관제(SSE, Kafka 소비) 책임을 `Dispatch`/`Route`와 별도의 `Delivery` 도메인 패키지로 분리해 구현되어 있다. 이 문서의 Aggregate 표는 `Dispatch`/`Route` 중심으로 기술되어 있어 실제 코드 구조와 이름이 완전히 일치하지 않는다. `Delivery`를 별도 Aggregate로 문서에도 명시할지, 배송 이력(`DeliveryHistory`)을 `dispatch_history`와 같은 것으로 볼지는 아직 결정되지 않았다 (`DECISION_LOG.md`의 미결정 항목 참고).
-
-## 이상 유형
-
-- `OVER_CAPACITY`: 중량 또는 부피 초과 시도
-- `INVALID_TRANSITION`: 허용되지 않은 상태 전이
-- `DRIVER_SCHEDULE_CONFLICT`: 기사 일정 중복
-- `STALLED_DISPATCH`: IN_TRANSIT 상태가 기준 시간을 초과
-- `DUPLICATE_ASSIGNMENT`: 물량의 활성 배차 중복
-
-거부형 이상은 명령을 실패시키면서 감사용 기록을 남긴다. 지연형 이상은 배치 검사 또는 스케줄러가 생성한다.
-
+모든 상태 변경은 이벤트(`fromStatus`, `toStatus`, `actor`, `orderId`)로 발행되고 Consumer가 `audit_log`에 기록한다. 주문 상세의 이벤트 이력은 같은 로그를 `orderId`로 조회한다.

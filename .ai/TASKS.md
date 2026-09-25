@@ -1,24 +1,25 @@
 # TASKS
 
+> 2026-09-25 방향 전환으로 백로그를 3일 계획으로 재작성했다. 이전 TASK-001~011(경로 최적화·이상 탐지 중심)은 폐기/재정의되었으며 재사용 자산은 하단 "재사용 자산"을 참고한다. 진행 상태는 착수 시 갱신한다.
+
 ## 작업 백로그
 
-| Task | Day | 연결 요구사항 | 완료 산출물 |
-|---|---:|---|---|
-| TASK-001 프로젝트/인프라 초기화 | 1 | REQ-023, REQ-024 | 앱 실행, Compose, health, 오류 계약 |
-| TASK-002 스키마와 마이그레이션 | 1 | REQ-001~019 | Flyway, Entity, Repository smoke test |
-| TASK-003 입고 유스케이스 | 2 | REQ-001~003 | 등록/검수/완료 API와 테스트 |
-| TASK-004 출고 계획 | 2 | REQ-004~006 | 계획 생성, 가용량 검증 |
-| TASK-005 차량 후보 | 3 | REQ-007~009, 011 | 후보·제외 사유·경계 테스트 |
-| TASK-006 배차 확정 | 3 | REQ-006, 008, 010 | 차량/기사/물량 연결, 충돌 테스트 |
-| TASK-007 경로 최적화 | 4 | REQ-012~014 | NN+2-opt, 거리 비교, 결정성 테스트 |
-| TASK-008 배송 상태/이력 | 4 | REQ-015~016 | 상태 머신, 경유지, 이력 |
-| TASK-009 Kafka 후속 처리 | 5 | REQ-017, 019, NFR-003 | 이벤트, Consumer, 멱등성 |
-| TASK-010 Redis 캐시 | 5 | REQ-020~021 | cache-aside, TTL, 무효화 |
-| TASK-011 SSE 관제 | 5 | REQ-018 | 스트림, 재연결 기본 처리 |
-| TASK-012 React 운영 화면 | 6 | REQ-001~019 | 핵심 3~5 화면 |
-| TASK-013 통합/성능 검증 | 6 | REQ-022~024 | E2E, k6, Compose |
-| TASK-014 포트폴리오 정리 | 7 | 전체 | README, 다이어그램, 결과표, 데모 |
-| TASK-015 입고 실측 적재량 마이그레이션 (백로그) | - | ADR-006 | Inbound에 weightKg/volumeM3 실측 입력, Outbound가 inboundId로 조회하는 인터페이스 설계, OutboundItem 직접입력값 대체 |
+| Task | Day | 연결 요구사항 | 완료 산출물 | 상태 |
+|---|---:|---|---|---|
+| TASK-001 기반 정리 | 1 | NFR-001, 003, 005 | 폐기 대상 코드 정리(승인 후), 상태 변경 이벤트 공통 발행, 스키마 방식 확정 | 완료 (2026-09-25) |
+| TASK-002 기준정보 BE | 1 | REQ-001~003 | 상품/창고·구역·위치/차량/기사 API와 테스트 | 완료 (2026-09-25) |
+| TASK-003 입고·적치·재고 BE | 1 | REQ-004~006 | 입고 상태 전이, 적치 시 재고 증가, 재고 조회 | 완료 (2026-09-25) |
+| TASK-004 FE 기반·기준정보·재고·입고 | 1 | REQ-001~006 | 레이아웃, 라우팅, 해당 화면 | 완료 (2026-09-25, 브라우저 육안 확인 전) |
+| TASK-005 주문·재고 예약 | 2 | REQ-007~010, NFR-006 | 주문 생성/목록/상세, 예약, 출고 지시 | 대기 |
+| TASK-006 피킹·포장 | 2 | REQ-011~013 | 피킹·포장 작업, 재고 차감 | 대기 |
+| TASK-007 상차·배차 | 2 | REQ-014~016 | Shipment 생성, 배차 등록/시작/취소, 적재량 검증 | 대기 |
+| TASK-008 배송현황·완료·실패 | 2 | REQ-017~020 | 차량 진행률, 배송 완료/실패 | 대기 |
+| TASK-009 FE 주문·창고작업·배송 | 2 | REQ-007~020 | 해당 화면 | 대기 |
+| TASK-010 반품 | 3 | REQ-021~022 | 반품 자동 생성, 회수 흐름, 재고 복구 | 대기 |
+| TASK-011 감사로그·Kafka Consumer | 3 | REQ-023, NFR-003 | AuditConsumer 멱등, 검색 API | 대기 |
+| TASK-012 대시보드·Redis·SSE | 3 | REQ-024~025, NFR-004 | 요약/차량/이벤트 API, 캐시, SSE | 대기 |
+| TASK-013 FE 반품·감사로그·대시보드 | 3 | REQ-021~025 | 해당 화면 | 대기 |
+| TASK-014 E2E·문서·데모 | 3 | 전체 | `ORD-001` E2E 테스트, README, 데모 (여유 시 k6) | 대기 |
 
 ## Task 실행 카드
 
@@ -45,50 +46,15 @@
 
 ## 핵심 Task별 추가 완료 조건
 
-### TASK-005
+- **TASK-003/005/006**: 재고는 음수가 되지 않으며 `가용 = 현재 - 예약`이 항상 성립한다. 동시 주문에서 가용재고를 초과 예약하지 않는다.
+- **TASK-007**: 총 중량이 적재량을 넘으면 배차를 거부하고, 실패 시 부분 배차 데이터가 남지 않는다. 같은 Shipment/차량/기사의 이중 배정을 차단한다.
+- **TASK-008/010**: 인도수량 불일치는 완료할 수 없고, 실패 시 반품이 정확히 1건 생성된다. 파손 사유는 재고를 복구하지 않는다.
+- **TASK-011**: 같은 eventId를 재처리해도 감사로그가 한 번만 기록된다. 역직렬화 실패와 업무 실패를 구분해 로그로 남기고 무한 재시도하지 않는다.
+- **TASK-012**: Redis 장애 시 PostgreSQL 조회로 폴백한다. 상태 변경 후 캐시가 무효화된다.
 
-- 차량 중량과 부피를 모두 검증한다.
-- 가용하지 않은 차량의 제외 사유를 반환한다.
-- 같은 입력의 후보 정렬 결과가 결정적이다.
+## 재사용 자산 (이전 구현)
 
-### TASK-006
-
-- 기사 일정 충돌과 물량 중복을 차단한다.
-- 동시 요청에서 이중 배차가 발생하지 않는다.
-- 실패 시 부분 배차 데이터가 남지 않는다.
-
-### TASK-005/006 진행 상태 (2026-09-23)
-
-Vehicle/Driver 도메인, `POST /api/dispatches/candidates`, `POST /api/dispatches`(확정) 구현 완료. 적재량은 ADR-006(옵션 A), 일정 겹침 판단은 ADR-007(고정 4시간 창 + 비관적 잠금) 참고. 테스트: `DispatchCandidateServiceTest`, `DispatchConfirmServiceTest`, `DispatchConfirmConcurrencyTest`.
-
-### TASK-007
-
-- 모든 배송지를 한 번씩 포함한다.
-- 최적화 거리가 초기 거리보다 길지 않다.
-- 알고리즘 입력/결과와 단위를 문서화한다.
-
-### TASK-007/008 진행 상태 (2026-09-23)
-
-허브 좌표(ADR-008) + Outbound 좌표를 입력으로 Nearest Neighbor(허브 고정, 2-opt로 개선, Haversine km) 경로 계산 구현. `POST /dispatches/{id}/route/optimize`, `PATCH /dispatches/{id}/status`(expectedVersion 낙관적 잠금 + 이력 기록), `PATCH /dispatches/{id}/stops/{stopId}` 완료. DispatchStatus에 LOADED 추가(`CONFIRMED→LOADED→IN_TRANSIT→COMPLETED`), RouteStopStatus(`PENDING→ARRIVED→DELIVERED`) 모두 단계 건너뛰기/역행 차단, COMPLETED는 모든 Stop이 DELIVERED여야 허용. 테스트: `WaypointTest`, `TwoOptRouteImproverTest`, `RouteOptimizationServiceTest`, `DispatchStatusServiceTest`, `RouteStopServiceTest`.
-
-### TASK-009
-
-- 중복 eventId를 재처리해도 결과가 한 번만 반영된다.
-- 역직렬화 실패와 업무 실패를 구분해 로그로 남긴다.
-- 실패를 무한 재시도하지 않는다.
-
-### TASK-009/010/011 진행 상태 (2026-09-24)
-
-ADR-009/010 반영. Kafka(`logistics.dispatch.v1`, 배차 상태 성공 커밋 시에만 `@TransactionalEventListener(AFTER_COMMIT)`로 발행): HistoryConsumer(`logistics-history`, 조회용 투영 `dispatch_status_projection` 멱등 갱신), AnomalyConsumer(`logistics-anomaly`, `processed_event`로 멱등 처리 + `event_cursor`로 역순 aggregateVersion 스킵). `ErrorHandlingDeserializer` + `DefaultErrorHandler(FixedBackOff 1초×2회)`로 역직렬화 오류/업무 오류 구분 및 무한 재시도 방지.
-거부형 이상(OVER_CAPACITY/DRIVER_SCHEDULE_CONFLICT/DUPLICATE_ASSIGNMENT/INVALID_TRANSITION)은 Kafka를 거치지 않고 명령 실패 시점에 `REQUIRES_NEW`로 동기 기록, `STALLED_DISPATCH`만 `@Scheduled` + 주입된 `Clock`으로 탐지. `GET /api/anomalies`, `PATCH /api/anomalies/{id}/status` 추가.
-`GET /api/dispatches/{id}`에 Redis cache-aside 적용(`dispatch:detail:{id}`, TTL 60초, 상태/경유지/경로 변경 시 `@CacheEvict`). `CacheErrorHandler`로 Redis 장애 시 DB 폴백. 테스트 프로파일은 embedded-redis 없이 `ConcurrentMapCacheManager`로 대체(ADR-010).
-`GET /api/events/logistics` SSE(`LogisticsEventBroadcaster`, 15초 heartbeat, 전송 실패 emitter 자동 제거).
-테스트: `AnomalyServiceTest`, `StalledDispatchDetectorTest`, `DispatchRejectionAnomalyTest`, `DispatchEventConsumerTest`(실 로컬 Kafka로 멱등/역순 검증), `DispatchDetailCacheTest`, `CacheConfigTest`, `LogisticsEventBroadcasterTest`. `DispatchEventConsumerTest`는 embedded Kafka가 아닌 실 브로커에 의존해 타이밍에 따라 가끔 재시도가 필요할 수 있다(알려진 한계).
-프론트는 Day 6(TASK-012) 범위이므로 이번엔 백엔드만 구현했다.
-
-### TASK-013
-
-- 캐시 OFF/ON 조건 외 환경을 동일하게 유지한다.
-- 성능 수치와 함께 머신/데이터/VU/기간을 기록한다.
-- 실패한 요청과 병목 원인을 숨기지 않는다.
-
+- 재사용: `vehicle`, `driver`(컬럼 조정 필요), `global/*`(ApiResponse, 예외, Security, Kafka/Redis/Cache 설정, SSE Broadcaster), Kafka `ErrorHandlingDeserializer` 설정, `CacheErrorHandler`
+- 재정의: `inbound`, `dispatch`, `delivery`
+- 폐기 예정: `outbound`, `anomaly`, 경로·후보 로직(`RouteStop`, `NearestNeighbor`, `TwoOpt`, `CandidateScorer`, `HubLocation`, `StalledDispatchDetector` 등)
+- 실제 정리 범위는 TASK-001에서 승인받는다.
