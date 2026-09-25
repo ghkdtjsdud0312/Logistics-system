@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import DataTable from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
 import ReturnActions from '@/components/returns/ReturnActions';
@@ -31,6 +32,14 @@ function ReturnTable({ returns, locations, loading, onChanged }: ReturnTableProp
     {
       header: '처리',
       render: (r) => <ReturnActions returnOrder={r} locations={locations} onChanged={onChanged} />,
+    },
+    {
+      header: '상세',
+      render: (r) => (
+        <Link className="text-primary" to={`/returns/${r.id}`}>
+          상세
+        </Link>
+      ),
     },
   ];
   return <DataTable columns={columns} rows={returns} rowKey={(r) => r.id} loading={loading} />;

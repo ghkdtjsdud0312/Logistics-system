@@ -4,6 +4,8 @@ import { ReturnOrder } from '@/types/return';
 
 export const getReturns = () => unwrap<ReturnOrder[]>(apiClient.get('/returns'));
 
+export const getReturn = (id: number) => unwrap<ReturnOrder>(apiClient.get(`/returns/${id}`));
+
 export const collectReturn = (id: number) =>
   unwrap<ReturnOrder>(apiClient.patch(`/returns/${id}/collect`));
 
