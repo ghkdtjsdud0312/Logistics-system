@@ -8,11 +8,19 @@ const TONE_CLASS: Record<Tone, string> = {
   yellow: 'bg-yellow-100 text-yellow-800',
 };
 
-/** 상태 Badge */
-function StatusBadge({ label, tone }: { label: string; tone: Tone }) {
+const SIZE_CLASS = { md: 'px-2 py-0.5 text-xs', lg: 'px-3 py-1 text-sm' } as const;
+
+interface StatusBadgeProps {
+  label: string;
+  tone: Tone;
+  size?: keyof typeof SIZE_CLASS;
+}
+
+/** 상태 Badge. 상세 화면 제목에는 lg를 쓴다. */
+function StatusBadge({ label, tone, size = 'md' }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${TONE_CLASS[tone]}`}
+      className={`inline-block rounded-full font-medium ${SIZE_CLASS[size]} ${TONE_CLASS[tone]}`}
     >
       {label}
     </span>

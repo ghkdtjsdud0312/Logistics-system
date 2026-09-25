@@ -6,7 +6,6 @@ import OrderEventList from '@/components/order/OrderEventList';
 import OrderInfo from '@/components/order/OrderInfo';
 import OrderItemsTable from '@/components/order/OrderItemsTable';
 import OrderTimeline from '@/components/order/OrderTimeline';
-import ReleaseButton from '@/components/order/ReleaseButton';
 import { useFetch } from '@/hooks/useFetch';
 import { getOrder } from '@/services/orderService';
 
@@ -21,10 +20,7 @@ function OrderDetailPage() {
   return (
     <>
       <PageHeader title="주문 상세" />
-      <OrderInfo order={order} />
-      <div className="mb-4">
-        <ReleaseButton orderId={order.id} status={order.status} onDone={reload} />
-      </div>
+      <OrderInfo order={order} onChanged={reload} />
       <Section title="주문 상품">
         <OrderItemsTable items={order.items} />
       </Section>
