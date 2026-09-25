@@ -119,6 +119,12 @@
 - 결정: 3일 일정이라 Flyway는 도입하지 않고 로컬 개발은 `JPA_DDL_AUTO=update`(기본값)로 엔티티에서 테이블을 생성한다. 옛 테이블(`outbound`, `anomaly`, `route_stop` 등)은 로컬 DB에 남을 수 있으며 필요하면 DB를 초기화한다. `outbound`, `anomaly`, `dispatch`, `delivery`, `inbound` 도메인은 삭제 후 새 스펙대로 재작성하고, `vehicle`/`driver`는 컬럼(`capacityKg`, `driverCode`, `phone`)과 상태(`IN_OPERATION`, `DELIVERING`)를 조정해 유지한다. Kafka/SSE/Cache 설정은 `global/`에서 재사용하고 상태 변경 이벤트 공통 발행은 `global/event`에 둔다.
 - 위험: `update`는 컬럼 삭제·타입 변경을 반영하지 않는다. 운영 환경에는 부적합하며 README에 한계로 기록한다.
 
+## ADR-020 대시보드 캐시 컴포넌트와 진행 현황 키
+- 날짜: 2026-09-26 / 상태: Accepted
+- 결정: 대시보드 요약은 Spring Cache 대신 `DashboardCache`(Redis JSON, 키 `dashboard:summary`, TTL 30초)로 캐시한다. Redis 장애 시 예외를 삼키고 DB로 폴백한다(ADR-010의 정신 유지). 테스트 프로파일은 인메모리 구현을 쓴다. `DashboardConsumer`가 상태 변경 이벤트로 캐시를 비우고 SSE(`status-changed`)를 보낸다. 진행 현황 키는 `ORDERS`, `PICKING`, `PACKING`, `LOADING`, `DELIVERY`로 확정한다.
+- 근거: 기록(record) DTO를 Redis 기본 직렬화(default typing)로 되살리기 어렵고, 캐시 동작을 명시적으로 검증할 수 있다.
+- 한계: 감사로그 Consumer와 대시보드 Consumer는 서로 다른 그룹이라 "최근 이벤트" 조회가 방금 발생한 이벤트보다 잠깐 늦을 수 있다. 화면은 SSE로 받은 이벤트를 목록 맨 앞에 바로 추가해 보완한다.
+
 ## 미결정 항목 (확인 필요)
 
 아래는 방향 전환 문서화 과정에서 사용자 확인 없이 초안으로 정한 부분이다. 확인 후 ADR로 승격하거나 수정한다.
@@ -130,7 +136,7 @@
 5. ~~스키마 관리 방식~~ → ADR-019로 결정(2026-09-25).
 6. ~~기존 코드 정리 범위~~ → ADR-019로 결정(2026-09-25).
 7. **SSE 재연결·Kafka 발행 실패**: `EventSource` 기본 재연결과 "발행 실패 시 재처리는 README에 한계로 기록" 수준까지만 정했다.
-8. **대시보드 "최근 이벤트"의 원천**: `audit_log` 최신 N건을 사용하는 초안이다(감사로그 소비 지연이 있으면 SSE 페이로드로 보완).
+8. ~~대시보드 최근 이벤트의 원천~~ → `audit_log` 최신순으로 확정(ADR-020).
 
 ## 새 결정 기록 형식
 

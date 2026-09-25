@@ -145,15 +145,15 @@
 |---|---|---|
 | GET | `/audit-logs?from=&to=&actor=&target=&action=` | 감사로그 검색 |
 
-행: `{occurredAt, actor, targetNo, action, fromStatus, toStatus}`
+행: `{occurredAt, actor, targetType, targetNo, action, description, fromStatus, toStatus}` — `description`은 작업 코드의 한글 설명(예: `DELIVER` → 배송 완료). `action`은 작업 코드 정확 일치, `target`은 대상 번호 부분 일치로 검색하며 최신 100건까지 반환한다.
 
 ## 대시보드·SSE
 
 | Method | Path | 설명 |
 |---|---|---|
 | GET | `/dashboard/summary` | 오늘의 현황 (Redis 캐시) |
-| GET | `/dashboard/vehicles` | 차량 배송 현황 |
-| GET | `/dashboard/events?limit=10` | 최근 물류 이벤트 |
+| GET | `/dashboard/vehicles` | 차량 배송 현황 (`/delivery-status`와 같은 형식) |
+| GET | `/dashboard/events?limit=10` | 최근 물류 이벤트 `[{at, description}]` (감사로그 최신순) |
 | GET | `/events/logistics` | SSE 스트림 (`status-changed`) |
 
 ```json
@@ -161,10 +161,10 @@
 { "date": "2026-09-25",
   "orders": 128, "pickingWaiting": 24, "packingWaiting": 18, "loadingWaiting": 15,
   "inDelivery": 31, "delivered": 82, "failed": 3,
-  "progress": { "RECEIVED": 128, "PICKING": 24, "PACKED": 18, "LOADED": 15, "IN_DELIVERY": 31 } }
+  "progress": { "ORDERS": 128, "PICKING": 24, "PACKING": 18, "LOADING": 15, "DELIVERY": 31 } }
 ```
 
-- 집계 기준은 오늘 주문일(`ordered_at`)이다. `progress`는 단계별 **현재** 건수다(ADR-016).
+- 집계 기준은 오늘 주문일(`ordered_at`)이다. `progress`는 단계별 **현재** 건수이며 키는 `ORDERS`(오늘 주문 전체), `PICKING`(피킹 대기: 출고대기+피킹중), `PACKING`(포장 대기: 피킹완료), `LOADING`(상차 대기: 포장완료), `DELIVERY`(배송중)이다(ADR-016, ADR-020).
 
 ## 공통 오류 코드
 
