@@ -8,3 +8,6 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
+app:
+  event:
+    kafka-enabled: false
