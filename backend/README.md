@@ -1,6 +1,6 @@
 # logistics-system_back
 
-물류 담당자 입장에서의 물류 입·출고 및 배차 최적화 시스템 - 백엔드
+물류 담당자 입장에서의 물류 통합 관리 시스템 - 백엔드
 
 ## 기술 스택
 - Backend: Java 17, Spring Boot 3.3
@@ -36,31 +36,45 @@ docker compose up -d
 ./gradlew test
 ```
 
-### 4. 성능 테스트 (k6)
-```bash
-k6 run k6/inbound-load-test.js
-```
+### 4. 성능 테스트 (k6, 선택)
+대시보드 요약 조회(`GET /api/dashboard/summary`)의 Redis 캐시 OFF/ON을 비교합니다.
 
-## 폴더 구조 (DDD 계층 구조)
+## 도메인 구성 (목표 구조)
+주문 하나가 재고·창고 작업·상차·배차·배송·반품을 관통합니다. 도메인 간에는 Repository 주입과 JPA 연관 없이 ID 참조, Application Service 호출, Kafka 이벤트로만 협력합니다.
 ```
 src/main/java/com/logistics/
 ├── MainApplication.java
 ├── global/
-│   ├── config/     # Swagger, Redis, Kafka, Security, CORS 설정
+│   ├── config/     # Swagger, Redis, Kafka, Security(PermitAll), CORS 설정
 │   ├── error/      # 공통 예외 처리 (ErrorCode, BusinessException, GlobalExceptionHandler)
-│   └── common/     # 공통 응답(ApiResponse), BaseTimeEntity
+│   ├── common/     # 공통 응답(ApiResponse), BaseTimeEntity
+│   ├── event/      # 상태 변경 이벤트 발행 (커밋 후)
+│   └── sse/        # SSE 브로드캐스터
 └── domain/
-    ├── inbound/    # 입고 모듈
-    ├── outbound/   # 출고 모듈
-    ├── dispatch/   # 배차 모듈 (Nearest Neighbor 알고리즘)
-    └── delivery/   # 배송/관제 모듈 (SSE + Kafka)
+    ├── master/     # 상품, 창고·구역·위치
+    ├── vehicle/    # 차량
+    ├── driver/     # 기사
+    ├── inbound/    # 입고·적치
+    ├── inventory/  # 재고 (현재/예약/가용)
+    ├── order/      # 주문, 주문 상태
+    ├── warehouse/  # 피킹·포장 작업
+    ├── loading/    # 상차, Shipment
+    ├── dispatch/   # 배차
+    ├── delivery/   # 배송 시작·완료·실패, 배송현황
+    ├── returns/    # 반품
+    ├── audit/      # 감사로그 (Kafka Consumer)
+    └── dashboard/  # 대시보드 집계 (Redis 캐시, SSE)
 ```
+> 이전 도메인(`outbound`, `anomaly`, `dispatch`, `delivery`, `inbound`)은 삭제했고 `vehicle`, `driver`만 남아 있습니다. 나머지는 Day 1~3에 새로 구현합니다. 진행 상황은 `.ai/TASKS.md`를 참고하세요.
 
 각 도메인 모듈은 DDD 관점의 4계층으로 구성됩니다.
-- `presentation/` — Controller, Request/Response DTO
-- `application/`  — Service (유스케이스), 이벤트 리스너
-- `domain/`       — Entity, VO, Repository 포트(인터페이스), 도메인 서비스(알고리즘 등)
-- `infrastructure/` — JPA Repository 구현체, Kafka Producer, SSE Emitter 저장소 등 외부 기술 연동
+- `presentation/` — Controller, Request/Response DTO (비즈니스 로직 금지)
+- `application/`  — Service (유스케이스 흐름 제어)
+- `domain/`       — Entity, VO, Repository 포트(인터페이스), 상태 전이 등 핵심 규칙
+- `infrastructure/` — JPA Repository 구현체, Kafka Producer/Consumer, Redis 등 외부 기술 연동
+
+## API
+REST는 `/api` 하위, SSE는 `GET /api/events/logistics`입니다. 전체 명세는 [../.ai/API_SPEC.md](../.ai/API_SPEC.md)를 참고하세요.
 
 ## IDE 플러그인 (IntelliJ)
 아래 플러그인을 Marketplace에서 검색하여 설치해 주세요. (플러그인 마다 정확한 배포 ID가 달라 프로젝트 설정 파일로 자동화하지 않았습니다)
