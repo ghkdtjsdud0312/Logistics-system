@@ -53,6 +53,11 @@ public enum ErrorCode {
     SHIPMENT_NOT_IN_DELIVERY(HttpStatus.CONFLICT, "DV001", "배송중인 건만 완료·실패 처리할 수 있습니다."),
     DELIVERED_QTY_MISMATCH(HttpStatus.UNPROCESSABLE_ENTITY, "DV002", "인도수량이 배송수량과 다릅니다."),
 
+    // Return
+    RETURN_NOT_FOUND(HttpStatus.NOT_FOUND, "RT001", "반품 정보를 찾을 수 없습니다."),
+    INVALID_RETURN_TRANSITION(HttpStatus.CONFLICT, "RT002", "허용되지 않은 반품 상태 전이입니다."),
+    RETURN_LOCATION_REQUIRED(HttpStatus.UNPROCESSABLE_ENTITY, "RT003", "재고를 복구할 위치를 지정해야 합니다."),
+
     // Inventory
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "IV001", "가용 재고가 부족합니다."),
 
