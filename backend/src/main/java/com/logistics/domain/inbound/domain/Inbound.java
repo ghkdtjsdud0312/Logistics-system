@@ -5,13 +5,13 @@ import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * 입고 도메인 엔티티
- */
+import java.time.LocalDate;
+
+import static com.logistics.domain.inbound.domain.InboundStatus.*;
+
 @Getter
 @Entity
 @Table(name = "inbound")
@@ -22,51 +22,60 @@ public class Inbound extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private String inboundNo;
+
     @Column(nullable = false)
-    private String itemName;
+    private String partnerName;
+
+    @Column(nullable = false)
+    private Long productId;
 
     @Column(nullable = false)
     private int quantity;
 
     @Column(nullable = false)
-    private String warehouseLocation;
+    private LocalDate inboundDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private InboundStatus status;
+    private InboundStatus status = EXPECTED;
 
-    /** 검수 완료 시에만 값이 채워지는 실 수령 수량 */
-    private Integer inspectedQuantity;
+    /** 적치 위치 (적치완료 후에만 값이 있다) */
+    private Long locationId;
 
-    @Builder
-    public Inbound(String itemName, int quantity, String warehouseLocation) {
-        this.itemName = itemName;
+    public Inbound(String partnerName, Long productId, int quantity, LocalDate inboundDate) {
+        if (quantity <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        this.partnerName = partnerName;
+        this.productId = productId;
         this.quantity = quantity;
-        this.warehouseLocation = warehouseLocation;
-        this.status = InboundStatus.REQUESTED;
+        this.inboundDate = inboundDate;
     }
 
-    /** 입고 처리 시작: REQUESTED -> IN_PROGRESS */
-    public void start() {
-        if (this.status != InboundStatus.REQUESTED) {
-            throw new BusinessException(ErrorCode.INBOUND_INVALID_STATUS_TRANSITION);
-        }
-        this.status = InboundStatus.IN_PROGRESS;
+    /** 저장 후 발급된 ID로 업무번호(IN-001)를 부여한다. */
+    public void assignNo() {
+        this.inboundNo = String.format("IN-%03d", id);
     }
 
-    /** 검수 완료: IN_PROGRESS -> COMPLETED, 검수 수량 기록 */
-    public void complete(int inspectedQuantity) {
-        if (this.status != InboundStatus.IN_PROGRESS) {
-            throw new BusinessException(ErrorCode.INBOUND_INVALID_STATUS_TRANSITION);
-        }
-        this.inspectedQuantity = inspectedQuantity;
-        this.status = InboundStatus.COMPLETED;
+    public void receive() {
+        moveTo(EXPECTED, RECEIVED);
     }
 
-    public void cancel() {
-        if (this.status == InboundStatus.COMPLETED) {
+    public void readyForPutaway() {
+        moveTo(RECEIVED, PUTAWAY_WAITING);
+    }
+
+    public void putaway(Long locationId) {
+        moveTo(PUTAWAY_WAITING, PUTAWAY_DONE);
+        this.locationId = locationId;
+    }
+
+    private void moveTo(InboundStatus from, InboundStatus to) {
+        if (status != from) {
             throw new BusinessException(ErrorCode.INBOUND_INVALID_STATUS_TRANSITION);
         }
-        this.status = InboundStatus.CANCELLED;
+        this.status = to;
     }
 }

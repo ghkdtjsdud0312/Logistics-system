@@ -9,32 +9,25 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * InboundRepository 포트의 JPA 구현체 (Adapter)
- */
 @Repository
 @RequiredArgsConstructor
 public class InboundRepositoryImpl implements InboundRepository {
 
-    private final InboundJpaRepository inboundJpaRepository;
+    private final InboundJpaRepository jpaRepository;
 
     @Override
     public Inbound save(Inbound inbound) {
-        return inboundJpaRepository.save(inbound);
+        return jpaRepository.saveAndFlush(inbound);
     }
 
     @Override
     public Optional<Inbound> findById(Long id) {
-        return inboundJpaRepository.findById(id);
+        return jpaRepository.findById(id);
     }
 
     @Override
-    public List<Inbound> findAll() {
-        return inboundJpaRepository.findAll();
-    }
-
-    @Override
-    public List<Inbound> findByStatus(InboundStatus status) {
-        return inboundJpaRepository.findByStatus(status);
+    public List<Inbound> findAllByStatus(InboundStatus status) {
+        return status == null ? jpaRepository.findAllByOrderByIdDesc()
+                : jpaRepository.findAllByStatusOrderByIdDesc(status);
     }
 }

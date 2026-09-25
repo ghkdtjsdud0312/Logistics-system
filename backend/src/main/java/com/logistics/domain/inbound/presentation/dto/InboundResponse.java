@@ -2,27 +2,25 @@ package com.logistics.domain.inbound.presentation.dto;
 
 import com.logistics.domain.inbound.domain.Inbound;
 import com.logistics.domain.inbound.domain.InboundStatus;
+import com.logistics.domain.master.domain.Product;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record InboundResponse(
         Long id,
-        String itemName,
+        String inboundNo,
+        String partnerName,
+        Long productId,
+        String productCode,
+        String productName,
         int quantity,
-        String warehouseLocation,
+        LocalDate inboundDate,
         InboundStatus status,
-        Integer inspectedQuantity,
-        LocalDateTime createdAt
+        Long locationId
 ) {
-    public static InboundResponse from(Inbound inbound) {
-        return new InboundResponse(
-                inbound.getId(),
-                inbound.getItemName(),
-                inbound.getQuantity(),
-                inbound.getWarehouseLocation(),
-                inbound.getStatus(),
-                inbound.getInspectedQuantity(),
-                inbound.getCreatedAt()
-        );
+    public static InboundResponse of(Inbound inbound, Product product) {
+        return new InboundResponse(inbound.getId(), inbound.getInboundNo(), inbound.getPartnerName(),
+                inbound.getProductId(), product.getCode(), product.getName(), inbound.getQuantity(),
+                inbound.getInboundDate(), inbound.getStatus(), inbound.getLocationId());
     }
 }
