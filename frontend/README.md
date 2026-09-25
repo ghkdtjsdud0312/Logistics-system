@@ -46,4 +46,4 @@ src/
 - 타입은 `src/types/`, 상태 한글 매핑·목 데이터는 `src/constants/`, API 호출은 `src/services/`, 순수 계산은 `src/utils/`로 분리합니다.
 - 대시보드는 SSE(`/api/events/logistics`)의 `status-changed` 수신 시 요약을 재조회합니다.
 - 파일 하나는 약 30~50줄을 넘기지 않고 컴포넌트·훅으로 분리합니다.
-- 나중에 추가: 달력, 지도(Three.js/지도), 3D 창고.
+- 3D 창고는 Three.js로 구현되어 있다(창고·위치관리 > 3D 보기). 나중에 추가: 달력, 지도.
