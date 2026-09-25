@@ -19,7 +19,14 @@
 | TASK-011 감사로그·Kafka Consumer | 3 | REQ-023, NFR-003 | AuditConsumer 멱등, 검색 API | 완료 (2026-09-25) |
 | TASK-012 대시보드·Redis·SSE | 3 | REQ-024~025, NFR-004 | 요약/차량/이벤트 API, 캐시, SSE | 완료 (2026-09-26) |
 | TASK-013 FE 반품·감사로그·대시보드 | 3 | REQ-021~025 | 해당 화면 | 완료 (2026-09-26) |
-| TASK-014 E2E·문서·데모 | 3 | 전체 | `ORD-001` E2E 테스트, README, 데모 (여유 시 k6) | 대기 |
+| TASK-014 E2E·문서·데모 | 3 | 전체 | `ORD-001` E2E 테스트, README, 데모 (여유 시 k6) | 완료 (2026-09-26, k6 제외) |
+
+## 후속 과제
+
+- 파일 길이: 약 100줄을 넘는 일부 파일(예: `DispatchForm.tsx`, `DispatchRegistrationService.java`) 분리 리팩터링
+- 프런트 자동 테스트와 브라우저 육안 확인(헤드리스 Chrome은 이 개발 환경에서 실행되지 않아 미확인)
+- Kafka 발행 실패 대비 Outbox, SSE 다중 인스턴스 대응
+- 스케줄(달력), 지도, 3D 창고, k6 성능 비교
 
 ## Task 실행 카드
 

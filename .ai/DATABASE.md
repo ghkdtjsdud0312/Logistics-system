@@ -48,6 +48,13 @@
 | audit_log | id, occurred_at, actor, target_type, target_id, target_no, order_id(null), action, from_status, to_status | append-only |
 | processed_event | consumer_name, event_id, processed_at | 복합 PK |
 
+## 구현 시 달라진 점
+
+- 실제 테이블: `product, warehouse, zone, location, vehicle, driver, inbound, stock, stock_reservation, orders, order_item, picking_task, packing_task, shipment, dispatch, return_order, audit_log, processed_event`.
+- 배차와 Shipment의 연결은 별도 매핑 테이블 없이 `shipment.dispatch_id`로 표현한다.
+- `audit_log`에는 `event_id`를 두지 않고 `processed_event(consumer_name, event_id)`로 멱등 처리한다.
+- 스키마는 `JPA_DDL_AUTO=update`로 생성한다(ADR-019).
+
 ## 인덱스
 
 - `orders(status, ordered_at)`, `orders(customer_name)`
