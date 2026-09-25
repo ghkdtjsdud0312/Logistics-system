@@ -3,7 +3,7 @@ import { MenuGroup } from '@/types/menu';
 
 /** 사이드바 메뉴 구조 */
 export const MENU: MenuGroup[] = [
-  { label: '대시보드', to: ROUTES.DASHBOARD },
+  { label: '대시보드', children: [{ label: '전체 모니터링 현황', to: ROUTES.DASHBOARD }] },
   { label: '주문관리', children: [{ label: '주문 목록', to: ROUTES.ORDERS }] },
   {
     label: '창고관리',
@@ -25,7 +25,7 @@ export const MENU: MenuGroup[] = [
   { label: '반품관리', to: ROUTES.RETURNS },
   { label: '감사로그', to: ROUTES.AUDIT_LOGS },
   {
-    label: '기준정보',
+    label: '기준정보등록(관리자)',
     children: [
       { label: '상품관리', to: ROUTES.PRODUCTS },
       { label: '창고·위치관리', to: ROUTES.LOCATIONS },
