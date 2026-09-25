@@ -49,6 +49,10 @@ public enum ErrorCode {
     VEHICLE_UNAVAILABLE(HttpStatus.CONFLICT, "DP005", "선택한 차량은 배차할 수 없는 상태입니다."),
     DRIVER_UNAVAILABLE(HttpStatus.CONFLICT, "DP006", "선택한 기사는 배차할 수 없는 상태입니다."),
 
+    // Delivery
+    SHIPMENT_NOT_IN_DELIVERY(HttpStatus.CONFLICT, "DV001", "배송중인 건만 완료·실패 처리할 수 있습니다."),
+    DELIVERED_QTY_MISMATCH(HttpStatus.UNPROCESSABLE_ENTITY, "DV002", "인도수량이 배송수량과 다릅니다."),
+
     // Inventory
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "IV001", "가용 재고가 부족합니다."),
 
