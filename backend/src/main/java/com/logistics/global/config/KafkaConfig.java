@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * Kafka Producer / Consumer 설정
- * - delivery 도메인, dispatch 도메인(logistics.dispatch.v1)의 이벤트 발행/구독에 공통으로 사용
+ * - 상태 변경 이벤트(logistics.status-changed)의 발행/구독에 공통으로 사용
  * - ErrorHandlingDeserializer: 역직렬화 실패를 리스너까지 전달하지 않고 컨테이너 오류 핸들러로 분리한다 (업무 오류와 구분)
  * - DefaultErrorHandler: 업무 로직에서 던진 예외는 고정 횟수만 재시도하고 무한 재시도하지 않는다
  */

@@ -19,7 +19,7 @@ class CacheConfigTest {
     @DisplayName("캐시 조회/저장/무효화/전체삭제 오류는 예외를 던지지 않고 삼킨다")
     void allCacheOperations_swallowErrors() {
         Cache cache = mock(Cache.class);
-        when(cache.getName()).thenReturn("dispatchDetail");
+        when(cache.getName()).thenReturn("dashboard");
         RedisConnectionFailureException exception = new RedisConnectionFailureException("connection refused");
 
         assertThatCode(() -> errorHandler.handleCacheGetError(exception, cache, "1")).doesNotThrowAnyException();

@@ -12,7 +12,7 @@ spring:
   # --- JPA ---
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate}
+      ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate:
@@ -50,18 +50,10 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
-# --- 배송 허브(출발지) 좌표: ADR-008, 경로 최적화 시작점 ---
-hub:
-  latitude: ${HUB_LATITUDE:37.5665}
-  longitude: ${HUB_LONGITUDE:126.9780}
-
-# --- 배차 이상 탐지/캐시 설정: ADR-009/010 ---
-dispatch:
-  stalled-threshold-minutes: ${DISPATCH_STALLED_THRESHOLD_MINUTES:240}
-
+# --- 대시보드 캐시 ---
 app:
   cache:
-    dispatch-detail-ttl-seconds: ${CACHE_DISPATCH_DETAIL_TTL_SECONDS:60}
+    dashboard-ttl-seconds: ${CACHE_DASHBOARD_TTL_SECONDS:30}
 
 # --- Swagger / OpenAPI ---
 springdoc:

@@ -23,8 +23,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.time.Duration;
 
 /**
- * 배차 상세 조회 cache-aside 설정 (Day 5)
- * - Key: dispatch:detail:{id}, TTL 기본 60초
+ * 대시보드 요약 cache-aside 설정
+ * - Key: dashboard:{key}, TTL 기본 30초
  * - Redis 장애 시 예외를 삼켜(CacheErrorHandler) DB 폴백이 항상 동작하도록 한다 (ADR-010)
  */
 @Slf4j
@@ -32,14 +32,14 @@ import java.time.Duration;
 @Configuration
 public class CacheConfig implements CachingConfigurer {
 
-    @Value("${app.cache.dispatch-detail-ttl-seconds:60}")
-    private long dispatchDetailTtlSeconds;
+    @Value("${app.cache.dashboard-ttl-seconds:30}")
+    private long dashboardTtlSeconds;
 
     /** 테스트 프로파일: Redis 없이도 캐시 히트/미스/무효화 로직을 검증하기 위한 인메모리 대체재 (ADR-010) */
     @Profile("test")
     @Bean("cacheManager")
     public CacheManager testCacheManager() {
-        return new ConcurrentMapCacheManager("dispatchDetail");
+        return new ConcurrentMapCacheManager("dashboard");
     }
 
     @Profile("!test")
@@ -53,16 +53,16 @@ public class CacheConfig implements CachingConfigurer {
         redisObjectMapper.activateDefaultTyping(
                 redisObjectMapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
 
-        RedisCacheConfiguration dispatchDetailConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofSeconds(dispatchDetailTtlSeconds))
+        RedisCacheConfiguration dashboardConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofSeconds(dashboardTtlSeconds))
                 .disableCachingNullValues()
-                .computePrefixWith(cacheName -> "dispatch:detail:")
+                .computePrefixWith(cacheName -> "dashboard:")
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
                         .fromSerializer(new GenericJackson2JsonRedisSerializer(redisObjectMapper)));
 
         return RedisCacheManager.builder(connectionFactory)
-                .withCacheConfiguration("dispatchDetail", dispatchDetailConfig)
+                .withCacheConfiguration("dashboard", dashboardConfig)
                 .build();
     }
 
