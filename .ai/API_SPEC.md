@@ -77,7 +77,7 @@
   "events": [{ "at": "...", "description": "피킹 완료" }] }
 ```
 
-`timeline` 단계: RECEIVED, PICKED, PACKED, LOADED, DISPATCHED, IN_DELIVERY, DELIVERED. `deliveryStatus`는 Shipment 상태이며 없으면 `null`.
+`timeline` 단계: RECEIVED, PICKED, PACKED, LOADED, DISPATCHED, IN_DELIVERY, DELIVERED. 단계별 시각(`at`)은 접수 단계만 채우고 나머지는 감사로그 연동(Day 3) 이후 채운다. `events`도 그때까지 빈 배열이다. `deliveryStatus`는 Shipment 상태이며 없으면 `null`.
 
 ## 피킹·포장
 
