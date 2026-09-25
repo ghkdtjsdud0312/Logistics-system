@@ -11,7 +11,6 @@
 - 실시간: SSE
 - API 문서: Swagger / OpenAPI (springdoc)
 - 테스트: JUnit5, Spring Boot Test
-- 성능 테스트: k6
 - 실행: Docker / Docker Compose
 - 빌드: Gradle
 
@@ -36,8 +35,15 @@ docker compose up -d
 ./gradlew test
 ```
 
-### 4. 성능 테스트 (k6, 선택)
-대시보드 요약 조회(`GET /api/dashboard/summary`)의 Redis 캐시 OFF/ON을 비교합니다.
+### 4. 데모 데이터
+빈 DB에서 앱을 띄운 뒤 저장소 루트에서 `./scripts/demo-seed.sh`를 실행하면 상품·창고·차량·기사와 재고가 만들어집니다.
+
+### 테스트 구성
+- 도메인 단위 테스트: 상태 전이, 재고 규칙, 수량 검증
+- 서비스·API 테스트(H2): 흐름, 경계값, 오류 응답 (`domain/*`)
+- 동시성 테스트: 동시 주문의 초과 예약 방지, 같은 배송의 이중 배차 방지
+- E2E 테스트(`e2e/OrderJourneyE2ETest`): `ORD-001` 성공 흐름, 배송 실패 → 반품 → 재고 복구
+- 테스트 프로파일에서는 Kafka 발행과 Consumer를 끄고(`app.event.kafka-enabled=false`) 인메모리 캐시를 사용합니다.
 
 ## 도메인 구성 (목표 구조)
 주문 하나가 재고·창고 작업·상차·배차·배송·반품을 관통합니다. 도메인 간에는 Repository 주입과 JPA 연관 없이 ID 참조, Application Service 호출, Kafka 이벤트로만 협력합니다.
