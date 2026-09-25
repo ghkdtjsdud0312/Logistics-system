@@ -49,6 +49,12 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.Map<Long, Order> getOrderMap(java.util.Collection<Long> ids) {
+        return orderRepository.findAllByIds(ids).stream()
+                .collect(Collectors.toMap(Order::getId, java.util.function.Function.identity()));
+    }
+
+    @Transactional(readOnly = true)
     public Order get(Long id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));

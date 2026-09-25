@@ -28,6 +28,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    public List<Order> findAllByIds(java.util.Collection<Long> ids) {
+        return jpaRepository.findAllById(ids);
+    }
+
+    @Override
     public List<Order> search(OrderSearchCriteria c) {
         PageRequest page = PageRequest.of(c.page(), c.size(), Sort.by(Sort.Direction.DESC, "id"));
         return jpaRepository.findAll(OrderSpecifications.from(c), page).getContent();
