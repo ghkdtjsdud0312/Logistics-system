@@ -1,10 +1,14 @@
 package com.logistics.support;
 
+import com.logistics.domain.driver.application.DriverService;
+import com.logistics.domain.driver.domain.Driver;
 import com.logistics.domain.inventory.application.StockService;
 import com.logistics.domain.master.application.ProductService;
 import com.logistics.domain.master.application.WarehouseService;
 import com.logistics.domain.master.domain.Product;
 import com.logistics.domain.master.domain.Warehouse;
+import com.logistics.domain.vehicle.application.VehicleService;
+import com.logistics.domain.vehicle.domain.Vehicle;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -16,12 +20,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestData {
 
-    private static final List<String> TABLES = List.of("stock_reservation", "order_item", "orders",
-            "stock", "inbound", "product", "location", "zone", "warehouse");
+    private static final List<String> TABLES = List.of("stock_reservation", "picking_task", "packing_task", "shipment",
+            "dispatch", "order_item", "orders", "stock", "inbound", "product", "location", "zone", "warehouse",
+            "vehicle", "driver");
 
     private final ProductService productService;
     private final WarehouseService warehouseService;
     private final StockService stockService;
+    private final VehicleService vehicleService;
+    private final DriverService driverService;
     private final JdbcTemplate jdbcTemplate;
 
     public Long product(String code, double unitWeightKg) {
@@ -35,6 +42,16 @@ public class TestData {
         Long zoneId = warehouseService.addZone(warehouse.getId(), "Z01", "테스트구역").getId();
         return java.util.Arrays.stream(locationCodes)
                 .map(code -> warehouseService.addLocation(zoneId, code).getId()).toList();
+    }
+
+    public Long vehicle(double capacityKg) {
+        return vehicleService.create(Vehicle.builder()
+                .vehicleNumber("V" + System.nanoTime()).vehicleType("1톤").capacityKg(capacityKg).build()).getId();
+    }
+
+    public Long driver() {
+        return driverService.create(Driver.builder()
+                .driverCode("D" + System.nanoTime()).name("홍길동").phone("010").build()).getId();
     }
 
     public void stock(Long productId, Long locationId, int quantity) {
