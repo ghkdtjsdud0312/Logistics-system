@@ -23,6 +23,7 @@ export const MENU: MenuGroup[] = [
     ],
   },
   { label: '반품관리', to: ROUTES.RETURNS },
+  { label: '스케줄', to: ROUTES.SCHEDULE },
   { label: '감사로그', to: ROUTES.AUDIT_LOGS },
   {
     label: '기준정보등록(관리자)',

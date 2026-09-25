@@ -14,6 +14,7 @@ import DeliveryStatusPage from './pages/DeliveryStatus';
 import DeliveryResultPage from './pages/DeliveryResult';
 import ReturnsPage from './pages/Returns';
 import ReturnDetailPage from './pages/ReturnDetail';
+import SchedulePage from './pages/Schedule';
 import AuditLogsPage from './pages/AuditLogs';
 import ProductsPage from './pages/Products';
 import LocationsPage from './pages/Locations';
@@ -37,6 +38,7 @@ function AppRouter() {
         <Route path={ROUTES.DELIVERY_RESULT} element={<DeliveryResultPage />} />
         <Route path={ROUTES.RETURNS} element={<ReturnsPage />} />
         <Route path={ROUTES.RETURN_DETAIL} element={<ReturnDetailPage />} />
+        <Route path={ROUTES.SCHEDULE} element={<SchedulePage />} />
         <Route path={ROUTES.AUDIT_LOGS} element={<AuditLogsPage />} />
         <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
         <Route path={ROUTES.LOCATIONS} element={<LocationsPage />} />

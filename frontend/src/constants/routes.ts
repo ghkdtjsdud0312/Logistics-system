@@ -13,6 +13,7 @@ export const ROUTES = {
   DELIVERY_RESULT: '/delivery/result',
   RETURNS: '/returns',
   RETURN_DETAIL: '/returns/:id',
+  SCHEDULE: '/schedule',
   AUDIT_LOGS: '/audit-logs',
   PRODUCTS: '/master/products',
   LOCATIONS: '/master/locations',
