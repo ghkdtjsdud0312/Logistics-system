@@ -1,9 +1,11 @@
-import apiClient from '@/config/axios';
-import { ApiResponse } from '@/types/common';
-import { Vehicle, VehicleCreateRequest } from '@/types/vehicle';
+import apiClient from '@/services/apiClient';
+import { unwrap } from '@/services/unwrap';
+import { Vehicle, VehicleCreate, VehicleStatus } from '@/types/vehicle';
 
-export const getVehicles = () =>
-  apiClient.get<ApiResponse<Vehicle[]>>('/vehicles').then((res) => res.data.data);
+export const getVehicles = () => unwrap<Vehicle[]>(apiClient.get('/vehicles'));
 
-export const createVehicle = (request: VehicleCreateRequest) =>
-  apiClient.post<ApiResponse<Vehicle>>('/vehicles', request).then((res) => res.data.data);
+export const createVehicle = (body: VehicleCreate) =>
+  unwrap<Vehicle>(apiClient.post('/vehicles', body));
+
+export const changeVehicleStatus = (id: number, status: VehicleStatus) =>
+  unwrap<Vehicle>(apiClient.patch(`/vehicles/${id}/status`, { status }));

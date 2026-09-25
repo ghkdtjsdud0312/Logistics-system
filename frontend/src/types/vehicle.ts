@@ -1,21 +1,15 @@
-/**
- * 차량 도메인 타입
- */
-export type VehicleStatus = 'AVAILABLE' | 'MAINTENANCE' | 'INACTIVE';
+export type VehicleStatus = 'AVAILABLE' | 'IN_OPERATION' | 'MAINTENANCE' | 'INACTIVE';
 
 export interface Vehicle {
   id: number;
   vehicleNumber: string;
   vehicleType: string;
-  maxWeightKg: number;
-  maxVolumeM3: number;
+  capacityKg: number;
   status: VehicleStatus;
 }
 
-export interface VehicleCreateRequest {
+export interface VehicleCreate {
   vehicleNumber: string;
   vehicleType: string;
-  maxWeightKg: number;
-  maxVolumeM3: number;
-  hubDistanceKm: number;
+  capacityKg: number;
 }

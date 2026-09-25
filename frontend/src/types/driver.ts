@@ -1,14 +1,15 @@
-/**
- * 기사 도메인 타입
- */
-export type DriverStatus = 'AVAILABLE' | 'OFF';
+export type DriverStatus = 'AVAILABLE' | 'DELIVERING' | 'OFF';
 
 export interface Driver {
   id: number;
+  driverCode: string;
   name: string;
+  phone: string | null;
   status: DriverStatus;
 }
 
-export interface DriverCreateRequest {
+export interface DriverCreate {
+  driverCode: string;
   name: string;
+  phone: string;
 }

@@ -1,9 +1,11 @@
-import apiClient from '@/config/axios';
-import { ApiResponse } from '@/types/common';
-import { Driver, DriverCreateRequest } from '@/types/driver';
+import apiClient from '@/services/apiClient';
+import { unwrap } from '@/services/unwrap';
+import { Driver, DriverCreate, DriverStatus } from '@/types/driver';
 
-export const getDrivers = () =>
-  apiClient.get<ApiResponse<Driver[]>>('/drivers').then((res) => res.data.data);
+export const getDrivers = () => unwrap<Driver[]>(apiClient.get('/drivers'));
 
-export const createDriver = (request: DriverCreateRequest) =>
-  apiClient.post<ApiResponse<Driver>>('/drivers', request).then((res) => res.data.data);
+export const createDriver = (body: DriverCreate) =>
+  unwrap<Driver>(apiClient.post('/drivers', body));
+
+export const changeDriverStatus = (id: number, status: DriverStatus) =>
+  unwrap<Driver>(apiClient.patch(`/drivers/${id}/status`, { status }));
