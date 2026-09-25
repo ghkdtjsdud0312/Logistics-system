@@ -1,17 +1,17 @@
 # Logistics Ops AI Harness
 
-물류센터의 입고·검수·출고 계획·차량/기사 배차·배송 경로 최적화·상차·배송 관제를 7일 동안 구현하기 위한 AI 코딩 에이전트용 개발 지시서다.
+주문 생성부터 재고 확인, 피킹, 포장, 상차, 배차, 배송, 완료/실패, 반품까지의 물류 전 과정을 3일(2026-09-25 ~ 09-27) 동안 구현하기 위한 AI 코딩 에이전트용 개발 지시서다.
 
 ## 프로젝트 한 줄 설명
 
-입·출고 물량과 차량 정보를 기반으로 배차 및 배송 경로를 최적화하고, 물류 처리 현황을 실시간으로 관리하는 물류 운영 시스템.
+주문 하나가 창고 작업과 차량 배송을 거쳐 고객에게 인도될 때까지의 상태와 수량을 추적하는 물류 통합 관리 시스템.
 
 ## 기술 스택
 
 - Backend: Java 17 / Spring Boot 3.x / Spring Data JPA
 - Frontend: React 18+ / TypeScript / Tailwind CSS
 - Infra/Event: PostgreSQL / Redis / Apache Kafka / SSE / Docker Compose
-- Test/Perf: JUnit 5 / k6
+- Test: JUnit 5 (선택: k6)
 
 상세 근거는 `.ai/PROJECT.md`, `.ai/ARCHITECTURE.md` 참고.
 
@@ -29,17 +29,17 @@
 10. `.ai/TEST_STRATEGY.md`
 11. `.ai/DEVELOPMENT_PHASES.md`
 12. `.ai/TASKS.md`
-13. `docks/development/DAY_01_FOUNDATION.md`부터 날짜 순서대로 확인
+13. `.ai/DECISION_LOG.md`, `.ai/DEMO_SCENARIO.md`
+14. `docks/development/DAY_01_FOUNDATION_MASTER_INVENTORY.md`부터 날짜 순서대로 확인
 
-## 7일 성공 기준
+## 3일 성공 기준
 
-- 입고 완료 물량으로 출고 계획을 생성할 수 있다.
-- 중량·부피·차량 상태를 검증해 차량과 기사를 배차할 수 있다.
-- 좌표 기반 `Nearest Neighbor + 2-opt`로 배송 순서를 계산한다.
-- 배차 완료부터 배송 완료까지 상태 전이를 강제한다.
-- Kafka 이벤트로 이력·이상 탐지를 후속 처리한다.
-- Redis 적용 전후 조회 성능을 k6로 비교한다.
-- SSE로 관리자 화면에 상태 이벤트를 전달한다.
+- 기준정보를 등록하고 입고·적치로 재고(현재/예약/가용)를 만들 수 있다.
+- `ORD-001`이 주문접수부터 배송완료까지 상태 전이 규칙대로 이동하고 재고·수량이 정합하다.
+- 상차 → 배차(적재량 검증) → 배송 시작 → 완료/실패가 동작한다.
+- 배송 실패 시 반품이 생성되고 회수 후 재고가 규칙대로 복구된다.
+- 모든 상태 변경이 Kafka 이벤트로 감사로그에 남는다.
+- 대시보드가 Redis 캐시와 SSE로 실시간 갱신된다.
 - Docker Compose로 핵심 실행 환경을 재현한다.
 
 ## 작업 요청 예시
@@ -56,10 +56,6 @@ TASK-005를 수행하라.
 
 | 일차 | 문서 | 핵심 결과물 |
 |---:|---|---|
-| 1 | `docks/development/DAY_01_FOUNDATION.md` | 실행 기반, DB 초안, 공통 규약 |
-| 2 | `docks/development/DAY_02_INBOUND_OUTBOUND.md` | 입고·검수·출고 계획 |
-| 3 | `docks/development/DAY_03_FLEET_DISPATCH.md` | 차량 후보와 배차 확정 |
-| 4 | `docks/development/DAY_04_ROUTE_DELIVERY.md` | 경로 최적화와 배송 상태 |
-| 5 | `docks/development/DAY_05_EVENT_CACHE_REALTIME.md` | Kafka·Redis·SSE |
-| 6 | `docks/development/DAY_06_UI_INTEGRATION_PERFORMANCE.md` | 운영 화면·통합·k6 |
-| 7 | `docks/development/DAY_07_STABILIZATION_PORTFOLIO.md` | 안정화·문서·시연 자료 |
+| 1 (금) | `docks/development/DAY_01_FOUNDATION_MASTER_INVENTORY.md` | 기반 정리, 기준정보, 입고·적치, 재고 |
+| 2 (토) | `docks/development/DAY_02_ORDER_TO_DELIVERY.md` | 주문 → 피킹 → 포장 → 상차 → 배차 → 배송 |
+| 3 (일) | `docks/development/DAY_03_RETURN_AUDIT_DASHBOARD.md` | 반품, 감사로그, 대시보드(SSE), 마무리 |
