@@ -1,37 +1,23 @@
-import { NavLink } from 'react-router-dom';
+import { MENU } from '@/constants/menu';
+import SidebarLink from './SidebarLink';
 
-const menuItems = [
-  { to: '/', label: '대시보드' },
-  { to: '/inbound', label: '입고 관리' },
-  { to: '/outbound', label: '출고 관리' },
-  { to: '/dispatch', label: '배차 최적화' },
-  { to: '/fleet', label: '차량·기사 관리' },
-];
-
-/**
- * 공통 사이드바
- * - 도메인별 메뉴 내비게이션
- */
+/** 공통 사이드바: 7개 메뉴 그룹 */
 function Sidebar() {
   return (
-    <aside className="w-56 shrink-0 border-r border-gray-200 bg-white">
+    <aside className="w-56 shrink-0 overflow-y-auto border-r border-gray-200 bg-white">
       <nav className="flex flex-col gap-1 p-4">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) =>
-              `rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
+        {MENU.map((group) =>
+          group.to ? (
+            <SidebarLink key={group.label} to={group.to} label={group.label} />
+          ) : (
+            <div key={group.label} className="mt-2 flex flex-col gap-1">
+              <span className="px-3 text-xs font-semibold text-gray-400">{group.label}</span>
+              {group.children?.map((child) => (
+                <SidebarLink key={child.to} to={child.to} label={child.label} nested />
+              ))}
+            </div>
+          ),
+        )}
       </nav>
     </aside>
   );

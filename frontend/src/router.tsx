@@ -1,25 +1,42 @@
 import { Routes, Route } from 'react-router-dom';
 import AppLayout from './layout/AppLayout';
-import HomePage from './pages/Home';
-import InboundPage from './pages/Inbound';
-import OutboundPage from './pages/Outbound';
-import DispatchPage from './pages/Dispatch';
+import { ROUTES } from './constants/routes';
+import DashboardPage from './pages/Dashboard';
+import OrderListPage from './pages/OrderList';
+import OrderDetailPage from './pages/OrderDetail';
+import StockStatusPage from './pages/StockStatus';
+import InboundPutawayPage from './pages/InboundPutaway';
+import PickingPackingPage from './pages/PickingPacking';
+import LoadingPage from './pages/Loading';
+import DispatchRegisterPage from './pages/DispatchRegister';
+import DeliveryStatusPage from './pages/DeliveryStatus';
+import DeliveryResultPage from './pages/DeliveryResult';
+import ReturnsPage from './pages/Returns';
+import AuditLogsPage from './pages/AuditLogs';
+import ProductsPage from './pages/Products';
+import LocationsPage from './pages/Locations';
 import FleetPage from './pages/Fleet';
 
-/**
- * 라우팅 뼈대
- * - AppLayout(Header + Sidebar) 하위에 각 도메인 페이지를 배치
- * - 실제 페이지가 추가되면 이곳에 Route를 계속 등록
- */
+/** 라우팅: AppLayout(Header + Sidebar) 하위에 화면 뼈대를 연결한다. */
 function AppRouter() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/inbound" element={<InboundPage />} />
-        <Route path="/outbound" element={<OutboundPage />} />
-        <Route path="/dispatch" element={<DispatchPage />} />
-        <Route path="/fleet" element={<FleetPage />} />
+        <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+        <Route path={ROUTES.ORDERS} element={<OrderListPage />} />
+        <Route path={ROUTES.ORDER_DETAIL} element={<OrderDetailPage />} />
+        <Route path={ROUTES.STOCKS} element={<StockStatusPage />} />
+        <Route path={ROUTES.INBOUNDS} element={<InboundPutawayPage />} />
+        <Route path={ROUTES.WAREHOUSE_WORK} element={<PickingPackingPage />} />
+        <Route path={ROUTES.LOADING} element={<LoadingPage />} />
+        <Route path={ROUTES.DISPATCH} element={<DispatchRegisterPage />} />
+        <Route path={ROUTES.DELIVERY_STATUS} element={<DeliveryStatusPage />} />
+        <Route path={ROUTES.DELIVERY_RESULT} element={<DeliveryResultPage />} />
+        <Route path={ROUTES.RETURNS} element={<ReturnsPage />} />
+        <Route path={ROUTES.AUDIT_LOGS} element={<AuditLogsPage />} />
+        <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
+        <Route path={ROUTES.LOCATIONS} element={<LocationsPage />} />
+        <Route path={ROUTES.FLEET} element={<FleetPage />} />
       </Route>
     </Routes>
   );
