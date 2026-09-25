@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from '@/config/env';
 import { DEFAULT_ACTOR } from '@/constants/actor';
 
 /**
@@ -7,7 +8,7 @@ import { DEFAULT_ACTOR } from '@/constants/actor';
  * - 인증은 없으며 감사로그용 X-Actor 헤더(URL 인코딩)만 보낸다.
  */
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
