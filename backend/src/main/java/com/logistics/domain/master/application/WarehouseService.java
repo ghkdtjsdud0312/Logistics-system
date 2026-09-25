@@ -4,6 +4,7 @@ import com.logistics.domain.master.domain.Location;
 import com.logistics.domain.master.domain.Warehouse;
 import com.logistics.domain.master.domain.WarehouseRepository;
 import com.logistics.domain.master.domain.Zone;
+import com.logistics.domain.master.presentation.dto.WarehouseTreeResponse;
 import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,11 @@ public class WarehouseService {
 
     public List<Warehouse> getTree() {
         return warehouseRepository.findAll();
+    }
+
+    /** 지연 로딩되는 구역·위치를 트랜잭션 안에서 DTO로 변환해 돌려준다. */
+    public List<WarehouseTreeResponse> getTreeResponses() {
+        return warehouseRepository.findAll().stream().map(WarehouseTreeResponse::from).toList();
     }
 
     @Transactional

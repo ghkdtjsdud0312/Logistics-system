@@ -41,6 +41,6 @@ public class WarehouseController {
 
     @GetMapping("/warehouses/tree")
     public ApiResponse<List<WarehouseTreeResponse>> getTree() {
-        return ApiResponse.success(warehouseService.getTree().stream().map(WarehouseTreeResponse::from).toList());
+        return ApiResponse.success(warehouseService.getTreeResponses());
     }
 }
