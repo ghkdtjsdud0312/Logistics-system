@@ -16,6 +16,7 @@ public enum ErrorCode {
     ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "C003", "요청한 리소스를 찾을 수 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C004", "서버 내부 오류가 발생했습니다."),
     DUPLICATE_CODE(HttpStatus.CONFLICT, "C005", "이미 사용 중인 코드입니다."),
+    CONCURRENT_UPDATE(HttpStatus.CONFLICT, "C006", "다른 요청이 먼저 처리되었습니다. 다시 시도하세요."),
 
     // Master
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PD001", "상품 정보를 찾을 수 없습니다."),
@@ -26,6 +27,10 @@ public enum ErrorCode {
     // Inbound
     INBOUND_NOT_FOUND(HttpStatus.NOT_FOUND, "IB001", "입고 정보를 찾을 수 없습니다."),
     INBOUND_INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "IB002", "허용되지 않은 입고 상태 전이입니다."),
+
+    // Order
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "OD001", "주문 정보를 찾을 수 없습니다."),
+    INVALID_ORDER_TRANSITION(HttpStatus.CONFLICT, "OD002", "허용되지 않은 주문 상태 전이입니다."),
 
     // Inventory
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "IV001", "가용 재고가 부족합니다."),
