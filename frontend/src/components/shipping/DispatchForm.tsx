@@ -46,6 +46,7 @@ function DispatchForm({
   return (
     <div className="flex flex-wrap items-end gap-3">
       <SelectField
+        required
         label="차량"
         value={values.vehicleId}
         onChange={(v) => setField('vehicleId', v)}
@@ -56,6 +57,7 @@ function DispatchForm({
         placeholder="차량 선택"
       />
       <SelectField
+        required
         label="기사"
         value={values.driverId}
         onChange={(v) => setField('driverId', v)}
@@ -63,12 +65,14 @@ function DispatchForm({
         placeholder="기사 선택"
       />
       <TextField
+        required
         label="출발예정"
         type="datetime-local"
         value={values.plannedStartAt}
         onChange={(v) => setField('plannedStartAt', v)}
       />
       <TextField
+        required
         label="배송예정"
         type="datetime-local"
         value={values.plannedArrivalAt}

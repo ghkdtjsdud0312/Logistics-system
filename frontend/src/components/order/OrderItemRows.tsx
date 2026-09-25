@@ -8,10 +8,11 @@ interface OrderItemRowsProps {
   products: Product[];
   lines: OrderLineInput[];
   onChange: (lines: OrderLineInput[]) => void;
+  error?: string;
 }
 
 /** 주문 상품 행 편집: 상품 선택 + 수량, 행 추가/삭제 */
-function OrderItemRows({ products, lines, onChange }: OrderItemRowsProps) {
+function OrderItemRows({ products, lines, onChange, error }: OrderItemRowsProps) {
   const update = (index: number, patch: Partial<OrderLineInput>) =>
     onChange(lines.map((l, i) => (i === index ? { ...l, ...patch } : l)));
   const options = products.map((p) => ({ value: String(p.id), label: `${p.code} ${p.name}` }));
@@ -21,6 +22,7 @@ function OrderItemRows({ products, lines, onChange }: OrderItemRowsProps) {
       {lines.map((line, i) => (
         <div key={i} className="flex items-end gap-2">
           <SelectField
+            required
             label="상품"
             value={line.productId}
             onChange={(v) => update(i, { productId: v })}
@@ -28,6 +30,7 @@ function OrderItemRows({ products, lines, onChange }: OrderItemRowsProps) {
             placeholder="상품 선택"
           />
           <TextField
+            required
             label="수량"
             type="number"
             value={line.quantity}
@@ -43,6 +46,7 @@ function OrderItemRows({ products, lines, onChange }: OrderItemRowsProps) {
           )}
         </div>
       ))}
+      {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         className={BUTTON_SECONDARY}
         onClick={() => onChange([...lines, { productId: '', quantity: '' }])}

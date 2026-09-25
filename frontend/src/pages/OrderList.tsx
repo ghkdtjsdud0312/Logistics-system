@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import FormCard from '@/components/common/FormCard';
 import PageHeader from '@/components/common/PageHeader';
 import Section from '@/components/common/Section';
 import OrderForm from '@/components/order/OrderForm';
@@ -23,9 +24,9 @@ function OrderListPage() {
         title="주문 목록"
         description="전체 주문을 조회하고 현재 처리 상태를 확인합니다."
       />
-      <Section title="주문 등록 (재고가 예약됩니다)">
+      <FormCard title="주문 등록 (재고가 예약됩니다)">
         <OrderForm products={products.data ?? []} onCreated={orders.reload} />
-      </Section>
+      </FormCard>
       <Section title="주문 조회">
         <OrderSearchBar onSearch={setSearch} />
         <OrderTable orders={orders.data ?? []} loading={orders.loading} />

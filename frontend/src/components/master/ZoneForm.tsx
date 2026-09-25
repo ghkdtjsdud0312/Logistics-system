@@ -10,8 +10,9 @@ function ZoneForm({ tree, onCreated }: { tree: WarehouseNode[]; onCreated: () =>
   const [warehouseId, setWarehouseId] = useState('');
 
   return (
-    <div className="flex items-end gap-2">
+    <div className="flex items-start gap-2">
       <SelectField
+        required
         label="창고"
         value={warehouseId}
         onChange={setWarehouseId}
@@ -21,6 +22,7 @@ function ZoneForm({ tree, onCreated }: { tree: WarehouseNode[]; onCreated: () =>
       <CodeNameForm
         buttonLabel="구역등록"
         onCreated={onCreated}
+        blockedReason={warehouseId ? undefined : '창고를 먼저 선택하세요.'}
         onSubmit={(body) => createZone(Number(warehouseId), body)}
       />
     </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import FormCard from '@/components/common/FormCard';
 import PageHeader from '@/components/common/PageHeader';
 import SelectField from '@/components/common/SelectField';
 import Section from '@/components/common/Section';
@@ -25,9 +26,9 @@ function InboundPutawayPage() {
         title="입고·적치"
         description="입고를 처리하고 위치에 적치하면 재고가 늘어납니다."
       />
-      <Section title="입고 예정 등록">
+      <FormCard title="입고 예정 등록">
         <InboundForm products={products.data ?? []} onCreated={inbounds.reload} />
-      </Section>
+      </FormCard>
       <Section title="입고 목록">
         <div className="mb-2 w-40">
           <SelectField

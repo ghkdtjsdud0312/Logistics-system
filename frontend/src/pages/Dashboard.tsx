@@ -30,7 +30,7 @@ function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="대시보드" description="오늘의 물류 현황 (실시간)" />
+      <PageHeader title="전체 모니터링 현황" description="오늘의 물류 현황 (실시간)" />
       {summary.data && <StatCards summary={summary.data} />}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Section title="물류 진행 현황">

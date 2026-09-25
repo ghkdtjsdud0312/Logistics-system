@@ -1,3 +1,4 @@
+import FormCard from '@/components/common/FormCard';
 import PageHeader from '@/components/common/PageHeader';
 import Section from '@/components/common/Section';
 import DriverForm from '@/components/master/DriverForm';
@@ -16,18 +17,18 @@ function FleetPage() {
   return (
     <>
       <PageHeader title="차량·기사관리" description="차량과 기사 기준정보를 관리합니다." />
-      <Section title="차량 등록">
-        <VehicleForm onCreated={vehicles.reload} />
-      </Section>
       <Section title="차량 목록">
         <VehicleTable vehicles={vehicles.data ?? []} loading={vehicles.loading} />
       </Section>
-      <Section title="기사 등록">
-        <DriverForm onCreated={drivers.reload} />
-      </Section>
+      <FormCard title="차량 등록">
+        <VehicleForm onCreated={vehicles.reload} />
+      </FormCard>
       <Section title="기사 목록">
         <DriverTable drivers={drivers.data ?? []} loading={drivers.loading} />
       </Section>
+      <FormCard title="기사 등록">
+        <DriverForm onCreated={drivers.reload} />
+      </FormCard>
     </>
   );
 }

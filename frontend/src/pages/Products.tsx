@@ -1,5 +1,5 @@
+import FormCard from '@/components/common/FormCard';
 import PageHeader from '@/components/common/PageHeader';
-import Section from '@/components/common/Section';
 import ProductForm from '@/components/master/ProductForm';
 import ProductTable from '@/components/master/ProductTable';
 import { useFetch } from '@/hooks/useFetch';
@@ -12,12 +12,12 @@ function ProductsPage() {
   return (
     <>
       <PageHeader title="상품관리" description="상품 기준정보를 관리합니다." />
-      <Section title="상품 등록">
-        <ProductForm onCreated={reload} />
-      </Section>
-      <Section title="상품 목록">
-        <ProductTable products={data ?? []} loading={loading} />
-      </Section>
+      <ProductTable products={data ?? []} loading={loading} />
+      <div className="mt-4">
+        <FormCard title="상품 등록">
+          <ProductForm onCreated={reload} />
+        </FormCard>
+      </div>
     </>
   );
 }
