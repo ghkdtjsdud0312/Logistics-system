@@ -6,12 +6,14 @@ import OrderListPage from './pages/OrderList';
 import OrderDetailPage from './pages/OrderDetail';
 import StockStatusPage from './pages/StockStatus';
 import InboundPutawayPage from './pages/InboundPutaway';
+import InboundDetailPage from './pages/InboundDetail';
 import PickingPackingPage from './pages/PickingPacking';
 import LoadingPage from './pages/Loading';
 import DispatchRegisterPage from './pages/DispatchRegister';
 import DeliveryStatusPage from './pages/DeliveryStatus';
 import DeliveryResultPage from './pages/DeliveryResult';
 import ReturnsPage from './pages/Returns';
+import ReturnDetailPage from './pages/ReturnDetail';
 import AuditLogsPage from './pages/AuditLogs';
 import ProductsPage from './pages/Products';
 import LocationsPage from './pages/Locations';
@@ -27,12 +29,14 @@ function AppRouter() {
         <Route path={ROUTES.ORDER_DETAIL} element={<OrderDetailPage />} />
         <Route path={ROUTES.STOCKS} element={<StockStatusPage />} />
         <Route path={ROUTES.INBOUNDS} element={<InboundPutawayPage />} />
+        <Route path={ROUTES.INBOUND_DETAIL} element={<InboundDetailPage />} />
         <Route path={ROUTES.WAREHOUSE_WORK} element={<PickingPackingPage />} />
         <Route path={ROUTES.LOADING} element={<LoadingPage />} />
         <Route path={ROUTES.DISPATCH} element={<DispatchRegisterPage />} />
         <Route path={ROUTES.DELIVERY_STATUS} element={<DeliveryStatusPage />} />
         <Route path={ROUTES.DELIVERY_RESULT} element={<DeliveryResultPage />} />
         <Route path={ROUTES.RETURNS} element={<ReturnsPage />} />
+        <Route path={ROUTES.RETURN_DETAIL} element={<ReturnDetailPage />} />
         <Route path={ROUTES.AUDIT_LOGS} element={<AuditLogsPage />} />
         <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
         <Route path={ROUTES.LOCATIONS} element={<LocationsPage />} />
