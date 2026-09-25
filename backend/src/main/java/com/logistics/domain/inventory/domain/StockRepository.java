@@ -10,4 +10,6 @@ public interface StockRepository {
     Optional<Stock> findByProductIdAndLocationId(Long productId, Long locationId);
 
     List<Stock> findAll();
+
+    List<Stock> findAllByProductId(Long productId);
 }
