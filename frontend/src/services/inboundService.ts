@@ -1,17 +1,15 @@
-import apiClient from '@/config/axios';
-import { ApiResponse } from '@/types/common';
-import { Inbound, InboundCompleteRequest, InboundCreateRequest } from '@/types/inbound';
+import apiClient from '@/services/apiClient';
+import { unwrap } from '@/services/unwrap';
+import { Inbound, InboundCreate } from '@/types/inbound';
 
-export const getInboundList = () =>
-  apiClient.get<ApiResponse<Inbound[]>>('/inbounds').then((res) => res.data.data);
+export const getInbounds = (status?: string) =>
+  unwrap<Inbound[]>(apiClient.get('/inbounds', { params: { status: status || undefined } }));
 
-export const createInbound = (request: InboundCreateRequest) =>
-  apiClient.post<ApiResponse<Inbound>>('/inbounds', request).then((res) => res.data.data);
+export const createInbound = (body: InboundCreate) =>
+  unwrap<Inbound>(apiClient.post('/inbounds', body));
 
-export const startInbound = (id: number) =>
-  apiClient.patch<ApiResponse<Inbound>>(`/inbounds/${id}/start`).then((res) => res.data.data);
+export const receiveInbound = (id: number) =>
+  unwrap<Inbound>(apiClient.patch(`/inbounds/${id}/receive`));
 
-export const completeInbound = (id: number, request: InboundCompleteRequest) =>
-  apiClient
-    .patch<ApiResponse<Inbound>>(`/inbounds/${id}/complete`, request)
-    .then((res) => res.data.data);
+export const putawayInbound = (id: number, locationId: number) =>
+  unwrap<Inbound>(apiClient.patch(`/inbounds/${id}/putaway`, { locationId }));

@@ -1,8 +1,16 @@
 import { InboundStatus } from '@/types/inbound';
+import { Tone } from '@/types/ui';
 
 export const INBOUND_STATUS_LABEL: Record<InboundStatus, string> = {
-  REQUESTED: '입고 요청',
-  IN_PROGRESS: '입고 처리중',
-  COMPLETED: '검수 완료',
-  CANCELLED: '취소됨',
+  EXPECTED: '입고예정',
+  RECEIVED: '입고완료',
+  PUTAWAY_WAITING: '적치대기',
+  PUTAWAY_DONE: '적치완료',
+};
+
+export const INBOUND_STATUS_TONE: Record<InboundStatus, Tone> = {
+  EXPECTED: 'gray',
+  RECEIVED: 'blue',
+  PUTAWAY_WAITING: 'yellow',
+  PUTAWAY_DONE: 'green',
 };

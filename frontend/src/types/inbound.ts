@@ -1,24 +1,21 @@
-/**
- * 입고 도메인 타입
- */
-export type InboundStatus = 'REQUESTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type InboundStatus = 'EXPECTED' | 'RECEIVED' | 'PUTAWAY_WAITING' | 'PUTAWAY_DONE';
 
 export interface Inbound {
   id: number;
-  itemName: string;
+  inboundNo: string;
+  partnerName: string;
+  productId: number;
+  productCode: string;
+  productName: string;
   quantity: number;
-  warehouseLocation: string;
+  inboundDate: string;
   status: InboundStatus;
-  inspectedQuantity: number | null;
-  createdAt: string;
+  locationId: number | null;
 }
 
-export interface InboundCreateRequest {
-  itemName: string;
+export interface InboundCreate {
+  partnerName: string;
+  productId: number;
   quantity: number;
-  warehouseLocation: string;
-}
-
-export interface InboundCompleteRequest {
-  inspectedQuantity: number;
+  inboundDate: string;
 }
