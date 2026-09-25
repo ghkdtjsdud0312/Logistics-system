@@ -3,12 +3,16 @@ package com.logistics.domain.order.infrastructure;
 import com.logistics.domain.order.domain.Order;
 import com.logistics.domain.order.domain.OrderRepository;
 import com.logistics.domain.order.domain.OrderSearchCriteria;
+import com.logistics.domain.order.domain.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -30,6 +34,13 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public List<Order> findAllByIds(java.util.Collection<Long> ids) {
         return jpaRepository.findAllById(ids);
+    }
+
+    @Override
+    public Map<OrderStatus, Long> countByStatus(LocalDateTime from, LocalDateTime to) {
+        Map<OrderStatus, Long> counts = new EnumMap<>(OrderStatus.class);
+        jpaRepository.countByStatus(from, to).forEach(c -> counts.put(c.getStatus(), c.getCount()));
+        return counts;
     }
 
     @Override

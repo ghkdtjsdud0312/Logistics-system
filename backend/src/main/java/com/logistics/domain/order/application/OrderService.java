@@ -49,6 +49,12 @@ public class OrderService {
         return order;
     }
 
+    /** 주문 시각 [from, to) 구간의 상태별 주문 수 (대시보드 집계용) */
+    @Transactional(readOnly = true)
+    public java.util.Map<OrderStatus, Long> countByStatus(LocalDateTime from, LocalDateTime to) {
+        return orderRepository.countByStatus(from, to);
+    }
+
     @Transactional(readOnly = true)
     public java.util.List<Order> findByStatus(OrderStatus status) {
         return orderRepository.search(new OrderSearchCriteria(null, null, status, null, null, 0, 200));
