@@ -1,0 +1,32 @@
+{
+  "label": "cache-off",
+  "rows": [
+    {
+      "scenario": "vu20",
+      "requests": 91837,
+      "reqPerSec": 3061.2,
+      "avgMs": 6.49,
+      "p95Ms": 9.87,
+      "maxMs": 89.95,
+      "errorRate": 0
+    },
+    {
+      "scenario": "vu100",
+      "requests": 94859,
+      "reqPerSec": 3162,
+      "avgMs": 31.58,
+      "p95Ms": 45.38,
+      "maxMs": 174.68,
+      "errorRate": 0
+    },
+    {
+      "scenario": "vu300",
+      "requests": 92613,
+      "reqPerSec": 3087.1,
+      "avgMs": 97.25,
+      "p95Ms": 153.75,
+      "maxMs": 774.51,
+      "errorRate": 0
+    }
+  ]
+}
