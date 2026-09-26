@@ -28,6 +28,20 @@
 | POST | `/drivers` | 기사 등록 | `{driverCode, name, phone}` |
 | GET | `/drivers?status=` | 기사 목록 | - |
 | PATCH | `/drivers/{id}/status` | 기사 상태 변경 | `{status}` |
+| PUT | `/products/{id}` | 상품 수정 (code 변경 불가) | `{name, unit, unitWeightKg}` |
+| DELETE | `/products/{id}` | 상품 삭제 | - |
+| PUT | `/warehouses/{id}` | 창고 수정 | `{name}` |
+| DELETE | `/warehouses/{id}` | 창고 삭제 | - |
+| PUT | `/zones/{id}` | 구역 수정 | `{name}` |
+| DELETE | `/zones/{id}` | 구역 삭제 | - |
+| DELETE | `/locations/{id}` | 위치 삭제 | - |
+| PUT | `/vehicles/{id}` | 차량 수정 | `{vehicleType, capacityKg}` |
+| DELETE | `/vehicles/{id}` | 차량 삭제 | - |
+| PUT | `/drivers/{id}` | 기사 수정 | `{name, phone}` |
+| DELETE | `/drivers/{id}` | 기사 삭제 | - |
+
+- 수정은 200 + 수정된 객체(창고·구역은 등록과 동일하게 `id`), 삭제는 200 + `data: null`. 삭제는 물리 삭제다.
+- 삭제 제약: 다른 도메인이 참조 중이면 409 `IN_USE`. 하위 구역·위치가 있는 창고·구역도 409 `IN_USE`.
 
 ## 입고·재고
 
