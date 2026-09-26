@@ -13,3 +13,5 @@ export interface VehicleCreate {
   vehicleType: string;
   capacityKg: number;
 }
+
+export type VehicleUpdate = Omit<VehicleCreate, 'vehicleNumber'>;

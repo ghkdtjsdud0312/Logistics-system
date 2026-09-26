@@ -13,3 +13,5 @@ export interface DriverCreate {
   name: string;
   phone: string;
 }
+
+export type DriverUpdate = Omit<DriverCreate, 'driverCode'>;

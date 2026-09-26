@@ -17,18 +17,18 @@ function FleetPage() {
   return (
     <>
       <PageHeader title="차량·기사관리" description="차량과 기사 기준정보를 관리합니다." />
-      <Section title="차량 목록">
-        <VehicleTable vehicles={vehicles.data ?? []} loading={vehicles.loading} />
-      </Section>
       <FormCard title="차량 등록">
         <VehicleForm onCreated={vehicles.reload} />
       </FormCard>
-      <Section title="기사 목록">
-        <DriverTable drivers={drivers.data ?? []} loading={drivers.loading} />
+      <Section title="차량 목록">
+        <VehicleTable vehicles={vehicles.data ?? []} loading={vehicles.loading} />
       </Section>
       <FormCard title="기사 등록">
         <DriverForm onCreated={drivers.reload} />
       </FormCard>
+      <Section title="기사 목록">
+        <DriverTable drivers={drivers.data ?? []} loading={drivers.loading} />
+      </Section>
     </>
   );
 }
