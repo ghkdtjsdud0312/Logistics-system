@@ -29,8 +29,15 @@ public class RedisDashboardCache implements DashboardCache {
     @Value("${app.cache.dashboard-ttl-seconds:30}")
     private long ttlSeconds;
 
+    /** false면 캐시를 쓰지 않고 항상 DB에서 집계한다(성능 비교 측정용). */
+    @Value("${app.cache.dashboard-enabled:true}")
+    private boolean enabled;
+
     @Override
     public <T> Optional<T> get(String key, Class<T> type) {
+        if (!enabled) {
+            return Optional.empty();
+        }
         try {
             String json = redis.opsForValue().get(PREFIX + key);
             return json == null ? Optional.empty() : Optional.of(objectMapper.readValue(json, type));
@@ -42,6 +49,9 @@ public class RedisDashboardCache implements DashboardCache {
 
     @Override
     public void put(String key, Object value) {
+        if (!enabled) {
+            return;
+        }
         try {
             redis.opsForValue().set(PREFIX + key, objectMapper.writeValueAsString(value), Duration.ofSeconds(ttlSeconds));
         } catch (RuntimeException | JsonProcessingException e) {

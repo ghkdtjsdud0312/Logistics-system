@@ -54,6 +54,7 @@ server:
 app:
   cache:
     dashboard-ttl-seconds: ${CACHE_DASHBOARD_TTL_SECONDS:30}
+    dashboard-enabled: ${CACHE_DASHBOARD_ENABLED:true}
 
 # --- Swagger / OpenAPI ---
 springdoc:
