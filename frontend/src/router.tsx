@@ -2,6 +2,9 @@ import { Routes, Route } from 'react-router-dom';
 import AppLayout from './layout/AppLayout';
 import { ROUTES } from './constants/routes';
 import DashboardPage from './pages/Dashboard';
+import DashboardVehiclesPage from './pages/DashboardVehicles';
+import DashboardProgressPage from './pages/DashboardProgress';
+import DashboardEventsPage from './pages/DashboardEvents';
 import OrderListPage from './pages/OrderList';
 import OrderDetailPage from './pages/OrderDetail';
 import StockStatusPage from './pages/StockStatus';
@@ -28,6 +31,9 @@ function AppRouter() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+        <Route path={ROUTES.DASHBOARD_VEHICLES} element={<DashboardVehiclesPage />} />
+        <Route path={ROUTES.DASHBOARD_PROGRESS} element={<DashboardProgressPage />} />
+        <Route path={ROUTES.DASHBOARD_EVENTS} element={<DashboardEventsPage />} />
         <Route path={ROUTES.ORDERS} element={<OrderListPage />} />
         <Route path={ROUTES.ORDER_DETAIL} element={<OrderDetailPage />} />
         <Route path={ROUTES.STOCKS} element={<StockStatusPage />} />

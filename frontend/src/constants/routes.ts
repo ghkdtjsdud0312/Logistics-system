@@ -1,6 +1,9 @@
 /** 라우트 경로 상수 */
 export const ROUTES = {
   DASHBOARD: '/',
+  DASHBOARD_VEHICLES: '/dashboard/vehicles',
+  DASHBOARD_PROGRESS: '/dashboard/progress',
+  DASHBOARD_EVENTS: '/dashboard/events',
   ORDERS: '/orders',
   ORDER_DETAIL: '/orders/:id',
   STOCKS: '/warehouse/stocks',
