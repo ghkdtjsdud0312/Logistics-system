@@ -5,6 +5,8 @@ import com.logistics.domain.driver.domain.DriverRepository;
 import com.logistics.domain.driver.domain.DriverStatus;
 import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
+import com.logistics.global.reference.ReferenceGuard;
+import com.logistics.global.reference.ReferenceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.util.List;
 public class DriverService {
 
     private final DriverRepository driverRepository;
+    private final ReferenceGuard referenceGuard;
 
     public Driver getDriver(Long id) {
         return driverRepository.findById(id)
@@ -47,5 +50,19 @@ public class DriverService {
         Driver driver = getDriver(id);
         driver.changeStatus(status);
         return driver;
+    }
+
+    @Transactional
+    public Driver update(Long id, String name, String phone) {
+        Driver driver = getDriver(id);
+        driver.update(name, phone);
+        return driver;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Driver driver = getDriver(id);
+        referenceGuard.assertNotReferenced(ReferenceType.DRIVER, id);
+        driverRepository.delete(driver);
     }
 }

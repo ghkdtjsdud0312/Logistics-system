@@ -44,6 +44,14 @@ public class Zone {
                 .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
     }
 
+    public void rename(String name) {
+        this.name = name;
+    }
+
+    public boolean removeLocation(Long locationId) {
+        return locations.removeIf(l -> l.getId().equals(locationId));
+    }
+
     public Location addLocation(String locationCode) {
         if (locations.stream().anyMatch(l -> l.getCode().equals(locationCode))) {
             throw new BusinessException(ErrorCode.DUPLICATE_CODE);

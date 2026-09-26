@@ -26,6 +26,11 @@ public class VehicleRepositoryImpl implements VehicleRepository {
     }
 
     @Override
+    public void delete(Vehicle vehicle) {
+        vehicleJpaRepository.delete(vehicle);
+    }
+
+    @Override
     public List<Vehicle> findAll() {
         return vehicleJpaRepository.findAll();
     }

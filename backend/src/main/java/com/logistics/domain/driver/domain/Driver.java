@@ -37,6 +37,11 @@ public class Driver extends BaseTimeEntity {
         this.status = DriverStatus.AVAILABLE;
     }
 
+    public void update(String name, String phone) {
+        this.name = name;
+        this.phone = phone;
+    }
+
     public void changeStatus(DriverStatus status) {
         this.status = status;
     }

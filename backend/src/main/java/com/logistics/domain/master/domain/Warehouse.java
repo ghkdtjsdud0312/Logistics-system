@@ -46,6 +46,33 @@ public class Warehouse extends BaseTimeEntity {
         return zone;
     }
 
+    public void rename(String name) {
+        this.name = name;
+    }
+
+    /** 위치가 하나도 없는 구역만 지울 수 있다. */
+    public void removeZone(Long zoneId) {
+        Zone zone = findZone(zoneId);
+        if (!zone.getLocations().isEmpty()) {
+            throw new BusinessException(ErrorCode.IN_USE);
+        }
+        zones.remove(zone);
+    }
+
+    public void removeLocation(Long locationId) {
+        boolean removed = zones.stream().anyMatch(z -> z.removeLocation(locationId));
+        if (!removed) {
+            throw new BusinessException(ErrorCode.LOCATION_NOT_FOUND);
+        }
+    }
+
+    /** 구역이 없는 창고만 지울 수 있다. */
+    public void assertDeletable() {
+        if (!zones.isEmpty()) {
+            throw new BusinessException(ErrorCode.IN_USE);
+        }
+    }
+
     public Zone getZone(String zoneCode) {
         return zones.stream().filter(z -> z.getCode().equals(zoneCode)).findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.ZONE_NOT_FOUND));

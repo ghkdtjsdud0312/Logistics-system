@@ -5,6 +5,7 @@ import com.logistics.domain.vehicle.domain.VehicleStatus;
 import com.logistics.domain.vehicle.presentation.dto.VehicleCreateRequest;
 import com.logistics.domain.vehicle.presentation.dto.VehicleResponse;
 import com.logistics.domain.vehicle.presentation.dto.VehicleStatusRequest;
+import com.logistics.domain.vehicle.presentation.dto.VehicleUpdateRequest;
 import com.logistics.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,5 +45,17 @@ public class VehicleController {
     @PatchMapping("/{id}/status")
     public ApiResponse<VehicleResponse> changeStatus(@PathVariable Long id, @Valid @RequestBody VehicleStatusRequest request) {
         return ApiResponse.success(VehicleResponse.from(vehicleService.changeStatus(id, request.status())));
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<VehicleResponse> update(@PathVariable Long id, @Valid @RequestBody VehicleUpdateRequest request) {
+        return ApiResponse.success(VehicleResponse.from(
+                vehicleService.update(id, request.vehicleType(), request.capacityKg())));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        vehicleService.delete(id);
+        return ApiResponse.success(null);
     }
 }

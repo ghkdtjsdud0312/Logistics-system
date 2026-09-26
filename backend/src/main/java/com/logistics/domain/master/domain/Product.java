@@ -40,4 +40,10 @@ public class Product extends BaseTimeEntity {
         this.unit = unit;
         this.unitWeightKg = unitWeightKg;
     }
+
+    public void update(String name, String unit, double unitWeightKg) {
+        this.name = name;
+        this.unit = unit;
+        this.unitWeightKg = unitWeightKg;
+    }
 }

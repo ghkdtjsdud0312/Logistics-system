@@ -5,6 +5,8 @@ import com.logistics.domain.vehicle.domain.VehicleRepository;
 import com.logistics.domain.vehicle.domain.VehicleStatus;
 import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
+import com.logistics.global.reference.ReferenceGuard;
+import com.logistics.global.reference.ReferenceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import java.util.List;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final ReferenceGuard referenceGuard;
 
     public Vehicle getVehicle(Long id) {
         return vehicleRepository.findById(id)
@@ -47,5 +50,19 @@ public class VehicleService {
         Vehicle vehicle = getVehicle(id);
         vehicle.changeStatus(status);
         return vehicle;
+    }
+
+    @Transactional
+    public Vehicle update(Long id, String vehicleType, double capacityKg) {
+        Vehicle vehicle = getVehicle(id);
+        vehicle.update(vehicleType, capacityKg);
+        return vehicle;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Vehicle vehicle = getVehicle(id);
+        referenceGuard.assertNotReferenced(ReferenceType.VEHICLE, id);
+        vehicleRepository.delete(vehicle);
     }
 }

@@ -9,6 +9,8 @@ public interface ProductRepository {
 
     Optional<Product> findById(Long id);
 
+    void delete(Product product);
+
     List<Product> findAllByIds(java.util.Collection<Long> ids);
 
     boolean existsByCode(String code);

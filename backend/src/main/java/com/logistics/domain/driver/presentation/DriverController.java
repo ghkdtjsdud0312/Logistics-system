@@ -5,6 +5,7 @@ import com.logistics.domain.driver.domain.DriverStatus;
 import com.logistics.domain.driver.presentation.dto.DriverCreateRequest;
 import com.logistics.domain.driver.presentation.dto.DriverResponse;
 import com.logistics.domain.driver.presentation.dto.DriverStatusRequest;
+import com.logistics.domain.driver.presentation.dto.DriverUpdateRequest;
 import com.logistics.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,5 +45,16 @@ public class DriverController {
     @PatchMapping("/{id}/status")
     public ApiResponse<DriverResponse> changeStatus(@PathVariable Long id, @Valid @RequestBody DriverStatusRequest request) {
         return ApiResponse.success(DriverResponse.from(driverService.changeStatus(id, request.status())));
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<DriverResponse> update(@PathVariable Long id, @Valid @RequestBody DriverUpdateRequest request) {
+        return ApiResponse.success(DriverResponse.from(driverService.update(id, request.name(), request.phone())));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        driverService.delete(id);
+        return ApiResponse.success(null);
     }
 }

@@ -39,6 +39,11 @@ public class Vehicle extends BaseTimeEntity {
         this.status = VehicleStatus.AVAILABLE;
     }
 
+    public void update(String vehicleType, double capacityKg) {
+        this.vehicleType = vehicleType;
+        this.capacityKg = capacityKg;
+    }
+
     public void changeStatus(VehicleStatus status) {
         this.status = status;
     }

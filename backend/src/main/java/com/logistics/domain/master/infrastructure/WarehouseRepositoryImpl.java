@@ -31,6 +31,16 @@ public class WarehouseRepositoryImpl implements WarehouseRepository {
     }
 
     @Override
+    public Optional<Warehouse> findByLocationId(Long locationId) {
+        return jpaRepository.findByLocationId(locationId);
+    }
+
+    @Override
+    public void delete(Warehouse warehouse) {
+        jpaRepository.delete(warehouse);
+    }
+
+    @Override
     public List<Warehouse> findAll() {
         return jpaRepository.findAll(Sort.by("code"));
     }

@@ -26,6 +26,11 @@ public class DriverRepositoryImpl implements DriverRepository {
     }
 
     @Override
+    public void delete(Driver driver) {
+        driverJpaRepository.delete(driver);
+    }
+
+    @Override
     public List<Driver> findAll() {
         return driverJpaRepository.findAll();
     }

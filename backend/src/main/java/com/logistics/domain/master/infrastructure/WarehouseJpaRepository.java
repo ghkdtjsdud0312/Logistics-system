@@ -14,6 +14,9 @@ public interface WarehouseJpaRepository extends JpaRepository<Warehouse, Long> {
     @Query("SELECT z.warehouse FROM Zone z WHERE z.id = :zoneId")
     Optional<Warehouse> findByZoneId(@Param("zoneId") Long zoneId);
 
+    @Query("SELECT l.zone.warehouse FROM Location l WHERE l.id = :locationId")
+    Optional<Warehouse> findByLocationId(@Param("locationId") Long locationId);
+
     @Query("SELECT COUNT(l) > 0 FROM Location l WHERE l.code = :code")
     boolean existsLocationCode(@Param("code") String code);
 }

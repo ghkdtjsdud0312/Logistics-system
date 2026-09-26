@@ -9,6 +9,8 @@ public interface VehicleRepository {
 
     Optional<Vehicle> findById(Long id);
 
+    void delete(Vehicle vehicle);
+
     List<Vehicle> findAll();
 
     boolean existsByVehicleNumber(String vehicleNumber);

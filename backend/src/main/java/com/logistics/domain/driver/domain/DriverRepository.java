@@ -9,6 +9,8 @@ public interface DriverRepository {
 
     Optional<Driver> findById(Long id);
 
+    void delete(Driver driver);
+
     List<Driver> findAll();
 
     boolean existsByDriverCode(String driverCode);

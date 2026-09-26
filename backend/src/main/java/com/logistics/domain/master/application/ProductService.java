@@ -4,6 +4,8 @@ import com.logistics.domain.master.domain.Product;
 import com.logistics.domain.master.domain.ProductRepository;
 import com.logistics.global.error.BusinessException;
 import com.logistics.global.error.ErrorCode;
+import com.logistics.global.reference.ReferenceGuard;
+import com.logistics.global.reference.ReferenceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ReferenceGuard referenceGuard;
 
     public Product getProduct(Long id) {
         return productRepository.findById(id)
@@ -41,5 +44,19 @@ public class ProductService {
             throw new BusinessException(ErrorCode.DUPLICATE_CODE);
         }
         return productRepository.save(product);
+    }
+
+    @Transactional
+    public Product update(Long id, String name, String unit, double unitWeightKg) {
+        Product product = getProduct(id);
+        product.update(name, unit, unitWeightKg);
+        return product;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Product product = getProduct(id);
+        referenceGuard.assertNotReferenced(ReferenceType.PRODUCT, id);
+        productRepository.delete(product);
     }
 }

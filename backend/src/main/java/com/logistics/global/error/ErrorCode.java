@@ -17,6 +17,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C004", "서버 내부 오류가 발생했습니다."),
     DUPLICATE_CODE(HttpStatus.CONFLICT, "C005", "이미 사용 중인 코드입니다."),
     CONCURRENT_UPDATE(HttpStatus.CONFLICT, "C006", "다른 요청이 먼저 처리되었습니다. 다시 시도하세요."),
+    IN_USE(HttpStatus.CONFLICT, "C007", "다른 데이터에서 사용 중이라 삭제할 수 없습니다."),
 
     // Master
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PD001", "상품 정보를 찾을 수 없습니다."),
