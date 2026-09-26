@@ -27,16 +27,24 @@ public class DashboardService {
     private final Clock clock;
 
     public DashboardSummary getSummary() {
+        return getSummary(null);
+    }
+
+    /** date가 없거나 오늘이면 캐시를 쓰고, 과거 날짜는 그날 주문의 현재 상태를 캐시 없이 집계한다. */
+    public DashboardSummary getSummary(LocalDate date) {
+        LocalDate today = LocalDate.now(clock);
+        if (date != null && !date.equals(today)) {
+            return compute(date);
+        }
         return cache.get(SUMMARY_KEY, DashboardSummary.class).orElseGet(() -> {
-            DashboardSummary summary = compute();
+            DashboardSummary summary = compute(today);
             cache.put(SUMMARY_KEY, summary);
             return summary;
         });
     }
 
-    private DashboardSummary compute() {
-        LocalDate today = LocalDate.now(clock);
-        Map<OrderStatus, Long> counts = orderService.countByStatus(today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+    private DashboardSummary compute(LocalDate date) {
+        Map<OrderStatus, Long> counts = orderService.countByStatus(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
         int picking = count(counts, OUTBOUND_WAITING) + count(counts, PICKING);
         int packing = count(counts, PICKED);
         int loading = count(counts, PACKED);
@@ -48,7 +56,7 @@ public class DashboardService {
         progress.put("PACKING", packing);
         progress.put("LOADING", loading);
         progress.put("DELIVERY", inDelivery);
-        return new DashboardSummary(today, total, picking, packing, loading, inDelivery,
+        return new DashboardSummary(date, total, picking, packing, loading, inDelivery,
                 count(counts, DELIVERED), count(counts, FAILED), progress);
     }
 

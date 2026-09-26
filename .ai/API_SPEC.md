@@ -165,9 +165,10 @@
 
 | Method | Path | 설명 |
 |---|---|---|
-| GET | `/dashboard/summary` | 오늘의 현황 (Redis 캐시) |
+| GET | `/dashboard/summary?date=YYYY-MM-DD` | 현황. `date` 생략 시 오늘(Redis 캐시), 과거 날짜는 그날 주문의 **현재 상태**를 캐시 없이 집계 |
 | GET | `/dashboard/vehicles` | 차량 배송 현황 (`/delivery-status`와 같은 형식) |
-| GET | `/dashboard/events?limit=10` | 최근 물류 이벤트 `[{at, description}]` (감사로그 최신순) |
+| GET | `/dashboard/progress/orders?stage=&date=YYYY-MM-DD` | 진행 현황 단계별 주문 목록. `stage`: `ORDERS`(그날 주문 전체)·`PICKING`(출고대기+피킹중)·`PACKING`(피킹완료)·`LOADING`(포장완료)·`DELIVERY`(배송중), `date` 생략 시 오늘. 행은 `GET /orders` 행과 같고 최신순 최대 200건 |
+| GET | `/dashboard/events?limit=10&date=YYYY-MM-DD` | 물류 이벤트 `[{at, description}]` (감사로그 최신순). `date`를 주면 그날 것만 |
 | GET | `/events/logistics` | SSE 스트림 (`status-changed`) |
 
 ```json

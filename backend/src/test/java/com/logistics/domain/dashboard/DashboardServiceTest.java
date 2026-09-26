@@ -3,6 +3,7 @@ package com.logistics.domain.dashboard;
 import com.logistics.domain.dashboard.application.DashboardCache;
 import com.logistics.domain.dashboard.application.DashboardQueryService;
 import com.logistics.domain.dashboard.application.DashboardService;
+import com.logistics.domain.dashboard.application.ProgressStage;
 import com.logistics.domain.dashboard.presentation.dto.DashboardSummary;
 import com.logistics.domain.delivery.application.DeliveryService;
 import com.logistics.domain.audit.application.AuditService;
@@ -22,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,5 +93,40 @@ class DashboardServiceTest {
 
         assertThat(queryService.getRecentEvents(10)).hasSize(1)
                 .first().extracting("description").isEqualTo("ORD-1021 배송 완료");
+    }
+
+    @Test
+    @DisplayName("과거 날짜를 주면 그날 주문 기준으로 집계하고 캐시를 쓰지 않는다")
+    void summary_pastDate() {
+        newOrder("DASH4");
+        LocalDate today = LocalDate.now();
+
+        assertThat(dashboardService.getSummary(today.minusDays(1)).orders()).isZero();
+        assertThat(dashboardService.getSummary(today.minusDays(1)).date()).isEqualTo(today.minusDays(1));
+        assertThat(dashboardService.getSummary(today).orders()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("이벤트는 날짜를 주면 그날 것만 돌려준다")
+    void recentEvents_byDate() {
+        auditService.record(new StatusChangedEvent("e-b", "ORDER", 1L, "ORD-1", 1L, "DELIVER",
+                "IN_DELIVERY", "DELIVERED", "홍길동", Instant.now()));
+
+        assertThat(queryService.getRecentEvents(10, LocalDate.now())).hasSize(1);
+        assertThat(queryService.getRecentEvents(10, LocalDate.now().minusDays(1))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("진행 현황 단계별 주문 목록은 요약 건수와 같고 다른 날짜에는 비어 있다")
+    void progressOrders_matchSummary() {
+        newOrder("DASH5");
+        testFlow.packedOrder(0.5, 2);
+
+        assertThat(queryService.getProgressOrders(ProgressStage.ORDERS, null)).hasSize(2);
+        assertThat(queryService.getProgressOrders(ProgressStage.LOADING, null))
+                .hasSize(dashboardService.getSummary().loadingWaiting());
+        assertThat(queryService.getProgressOrders(ProgressStage.PICKING, null))
+                .hasSize(dashboardService.getSummary().pickingWaiting());
+        assertThat(queryService.getProgressOrders(ProgressStage.ORDERS, LocalDate.now().minusDays(1))).isEmpty();
     }
 }

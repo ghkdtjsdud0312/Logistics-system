@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /** 감사로그 검색과 최근 이벤트 조회 */
@@ -24,7 +25,11 @@ public class AuditQueryService {
     }
 
     public List<AuditLogResponse> recent(int limit) {
-        AuditSearchCriteria criteria = new AuditSearchCriteria(null, null, null, null, null, Math.min(limit, MAX_LIMIT));
-        return search(criteria);
+        return recent(limit, null);
+    }
+
+    /** date가 있으면 그날 하루의 로그만 조회한다. */
+    public List<AuditLogResponse> recent(int limit, LocalDate date) {
+        return search(new AuditSearchCriteria(date, date, null, null, null, Math.min(limit, MAX_LIMIT)));
     }
 }
