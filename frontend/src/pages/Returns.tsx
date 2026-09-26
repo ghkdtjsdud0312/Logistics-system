@@ -1,4 +1,5 @@
 import PageHeader from '@/components/common/PageHeader';
+import { PAGE_PREV } from '@/constants/nextStep';
 import ReturnTable from '@/components/returns/ReturnTable';
 import { useFetch } from '@/hooks/useFetch';
 import { getReturns } from '@/services/returnService';
@@ -14,6 +15,7 @@ function ReturnsPage() {
     <>
       <PageHeader
         title="반품관리"
+        prev={PAGE_PREV.RETURNS}
         description="배송 실패 건이 자동으로 등록됩니다. 파손이 아니면 반품입고 시 재고가 복구됩니다."
       />
       <ReturnTable

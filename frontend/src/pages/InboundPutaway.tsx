@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import FormCard from '@/components/common/FormCard';
 import PageHeader from '@/components/common/PageHeader';
-import { PAGE_NEXT } from '@/constants/nextStep';
 import SelectField from '@/components/common/SelectField';
 import Section from '@/components/common/Section';
 import InboundForm from '@/components/inbound/InboundForm';
@@ -25,7 +24,6 @@ function InboundPutawayPage() {
     <>
       <PageHeader
         title="입고·적치"
-        next={PAGE_NEXT.INBOUNDS}
         description="입고를 처리하고 위치에 적치하면 재고가 늘어납니다."
       />
       <FormCard title="입고 예정 등록">

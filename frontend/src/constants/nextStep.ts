@@ -14,10 +14,18 @@ export const ORDER_NEXT_STEP: Partial<Record<OrderStatus, NextStep>> = {
   FAILED: { label: '반품 처리하러 가기', to: ROUTES.RETURNS },
 };
 
+/** 화면별 "이전 단계" 안내 (첫 단계인 주문 목록은 없다) */
+export const PAGE_PREV: Record<string, NextStep> = {
+  WAREHOUSE_WORK: { label: '주문 목록', to: ROUTES.ORDERS },
+  LOADING: { label: '피킹·포장', to: ROUTES.WAREHOUSE_WORK },
+  DISPATCH: { label: '상차관리', to: ROUTES.LOADING },
+  DELIVERY_STATUS: { label: '배차관리', to: ROUTES.DISPATCH },
+  DELIVERY_RESULT: { label: '배송현황', to: ROUTES.DELIVERY_STATUS },
+  RETURNS: { label: '배송완료·실패', to: ROUTES.DELIVERY_RESULT },
+};
+
 /** 화면별 "다음 단계" 안내 */
 export const PAGE_NEXT: Record<string, NextStep> = {
-  STOCKS: { label: '주문 등록하기', to: ROUTES.ORDERS },
-  INBOUNDS: { label: '재고 현황 확인', to: ROUTES.STOCKS },
   ORDERS: { label: '피킹·포장', to: ROUTES.WAREHOUSE_WORK },
   WAREHOUSE_WORK: { label: '상차관리', to: ROUTES.LOADING },
   LOADING: { label: '배차관리', to: ROUTES.DISPATCH },

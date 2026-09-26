@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import CheckList from '@/components/common/CheckList';
 import PageHeader from '@/components/common/PageHeader';
-import { PAGE_NEXT } from '@/constants/nextStep';
+import { PAGE_NEXT, PAGE_PREV } from '@/constants/nextStep';
 import { BUTTON_PRIMARY } from '@/constants/styles';
 import { useFetch } from '@/hooks/useFetch';
 import { useSubmit } from '@/hooks/useSubmit';
@@ -25,6 +25,7 @@ function LoadingPage() {
     <>
       <PageHeader
         title="상차관리"
+        prev={PAGE_PREV.LOADING}
         next={PAGE_NEXT.LOADING}
         description="포장된 주문을 선택해 상차합니다. 차량과 기사는 배차관리에서 배정합니다."
       />

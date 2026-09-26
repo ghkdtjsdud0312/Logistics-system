@@ -1,5 +1,5 @@
 import PageHeader from '@/components/common/PageHeader';
-import { PAGE_NEXT } from '@/constants/nextStep';
+import { PAGE_NEXT, PAGE_PREV } from '@/constants/nextStep';
 import DeliveryCard from '@/components/shipping/DeliveryCard';
 import { useFetch } from '@/hooks/useFetch';
 import { useRefreshOnEvents } from '@/hooks/useRefreshOnEvents';
@@ -15,6 +15,7 @@ function DeliveryStatusPage() {
     <>
       <PageHeader
         title="배송현황"
+        prev={PAGE_PREV.DELIVERY_STATUS}
         next={PAGE_NEXT.DELIVERY_STATUS}
         description="차량별 배송 진행 상황을 확인합니다. 상태가 바뀌면 자동으로 갱신됩니다."
       />
