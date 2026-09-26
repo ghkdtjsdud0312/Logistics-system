@@ -13,3 +13,5 @@ export interface ProductCreate {
   unit: string;
   unitWeightKg: number;
 }
+
+export type ProductUpdate = Omit<ProductCreate, 'code'>;
