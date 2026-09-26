@@ -22,15 +22,32 @@ export const MENU: MenuGroup[] = [
       { label: '배송완료·실패', to: ROUTES.DELIVERY_RESULT },
     ],
   },
-  { label: '반품관리', to: ROUTES.RETURNS },
-  { label: '스케줄', to: ROUTES.SCHEDULE },
-  { label: '감사로그', to: ROUTES.AUDIT_LOGS },
   {
     label: '기준정보등록(관리자)',
     children: [
       { label: '상품관리', to: ROUTES.PRODUCTS },
-      { label: '창고·위치관리', to: ROUTES.LOCATIONS },
-      { label: '차량·기사관리', to: ROUTES.FLEET },
+      {
+        label: '창고·위치관리',
+        children: [
+          { label: '창고 구조 등록 및 목록', to: ROUTES.LOCATIONS, end: true },
+          { label: '창고 구조 3D 보기', to: ROUTES.LOCATIONS_3D },
+        ],
+      },
+      {
+        label: '차량·기사관리',
+        children: [
+          { label: '차량 등록 및 목록', to: ROUTES.VEHICLES },
+          { label: '기사 등록 및 목록', to: ROUTES.DRIVERS },
+        ],
+      },
+      {
+        label: '관리',
+        children: [
+          { label: '반품관리', to: ROUTES.RETURNS },
+          { label: '감사로그', to: ROUTES.AUDIT_LOGS },
+        ],
+      },
+      { label: '스케줄(달력)', to: ROUTES.SCHEDULE },
     ],
   },
 ];

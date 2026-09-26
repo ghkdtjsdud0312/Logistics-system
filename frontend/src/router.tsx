@@ -18,7 +18,9 @@ import SchedulePage from './pages/Schedule';
 import AuditLogsPage from './pages/AuditLogs';
 import ProductsPage from './pages/Products';
 import LocationsPage from './pages/Locations';
-import FleetPage from './pages/Fleet';
+import Locations3DPage from './pages/Locations3D';
+import VehiclesPage from './pages/Vehicles';
+import DriversPage from './pages/Drivers';
 
 /** 라우팅: AppLayout(Header + Sidebar) 하위에 화면 뼈대를 연결한다. */
 function AppRouter() {
@@ -42,7 +44,9 @@ function AppRouter() {
         <Route path={ROUTES.AUDIT_LOGS} element={<AuditLogsPage />} />
         <Route path={ROUTES.PRODUCTS} element={<ProductsPage />} />
         <Route path={ROUTES.LOCATIONS} element={<LocationsPage />} />
-        <Route path={ROUTES.FLEET} element={<FleetPage />} />
+        <Route path={ROUTES.LOCATIONS_3D} element={<Locations3DPage />} />
+        <Route path={ROUTES.VEHICLES} element={<VehiclesPage />} />
+        <Route path={ROUTES.DRIVERS} element={<DriversPage />} />
       </Route>
     </Routes>
   );

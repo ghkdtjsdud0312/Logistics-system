@@ -17,5 +17,7 @@ export const ROUTES = {
   AUDIT_LOGS: '/audit-logs',
   PRODUCTS: '/master/products',
   LOCATIONS: '/master/locations',
-  FLEET: '/master/fleet',
+  LOCATIONS_3D: '/master/locations/3d',
+  VEHICLES: '/master/fleet/vehicles',
+  DRIVERS: '/master/fleet/drivers',
 } as const;

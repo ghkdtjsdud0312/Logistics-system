@@ -1,5 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { MENU } from '@/constants/menu';
+import { menuPaths } from '@/utils/menu';
+import SidebarChildren from './SidebarChildren';
 import SidebarLink from './SidebarLink';
 
 /** 공통 사이드바: 7개 메뉴 그룹. 현재 화면이 속한 그룹 제목도 강조한다. */
@@ -16,16 +18,14 @@ function Sidebar() {
             <div key={group.label} className="mt-3 flex flex-col gap-1">
               <span
                 className={`pl-4 text-xs font-bold ${
-                  group.children?.some((c) => pathname.startsWith(c.to))
+                  menuPaths(group.children).some((to) => pathname.startsWith(to))
                     ? 'text-primary'
                     : 'text-gray-400'
                 }`}
               >
                 {group.label}
               </span>
-              {group.children?.map((child) => (
-                <SidebarLink key={child.to} to={child.to} label={child.label} nested />
-              ))}
+              <SidebarChildren items={group.children ?? []} />
             </div>
           ),
         )}
