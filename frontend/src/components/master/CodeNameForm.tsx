@@ -12,13 +12,21 @@ interface CodeNameFormProps {
   onCreated: () => void;
   /** 값이 있으면 등록을 막고 이 문구를 보여 준다(예: 상위 항목 미선택). */
   blockedReason?: string;
+  /** true면 주소 입력을 함께 받는다(창고 등록). */
+  withAddress?: boolean;
 }
 
 const RULES = { code: required('코드'), name: required('이름') };
 
 /** 창고·구역 등록 폼(코드 + 이름) */
-function CodeNameForm({ buttonLabel, onSubmit, onCreated, blockedReason }: CodeNameFormProps) {
-  const { values, setField, reset } = useForm({ code: '', name: '' });
+function CodeNameForm({
+  buttonLabel,
+  onSubmit,
+  onCreated,
+  blockedReason,
+  withAddress,
+}: CodeNameFormProps) {
+  const { values, setField, reset } = useForm({ code: '', name: '', address: '' });
   const [errors, setErrors] = useState<Errors>({});
   const [blocked, setBlocked] = useState(false);
   const { submitting, run } = useSubmit();
@@ -28,7 +36,8 @@ function CodeNameForm({ buttonLabel, onSubmit, onCreated, blockedReason }: CodeN
     setErrors(found);
     setBlocked(Boolean(blockedReason));
     if (blockedReason || Object.keys(found).length > 0) return;
-    if (await run(() => onSubmit(values), '등록했습니다.')) {
+    const body = withAddress ? values : { code: values.code, name: values.name };
+    if (await run(() => onSubmit(body), '등록했습니다.')) {
       reset();
       onCreated();
     }
@@ -50,6 +59,13 @@ function CodeNameForm({ buttonLabel, onSubmit, onCreated, blockedReason }: CodeN
         value={values.name}
         onChange={(v) => setField('name', v)}
       />
+      {withAddress && (
+        <TextField
+          label="주소(좌표 변환용)"
+          value={values.address}
+          onChange={(v) => setField('address', v)}
+        />
+      )}
       <div className="mt-5">
         <button className={BUTTON_PRIMARY} disabled={submitting} onClick={submit}>
           {buttonLabel}

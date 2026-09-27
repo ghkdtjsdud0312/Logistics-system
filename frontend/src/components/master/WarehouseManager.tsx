@@ -1,14 +1,14 @@
 import ConfirmDeleteModal from '@/components/common/ConfirmDeleteModal';
 import EditModal from '@/components/master/EditModal';
 import WarehouseCards from '@/components/master/WarehouseCards';
-import { NAME_EDIT_FIELDS } from '@/constants/editFields';
+import { NAME_EDIT_FIELDS, WAREHOUSE_EDIT_FIELDS } from '@/constants/editFields';
 import { useRowActions } from '@/hooks/useRowActions';
 import {
   deleteLocation,
   deleteWarehouse,
   deleteZone,
-  renameWarehouse,
   renameZone,
+  updateWarehouse,
 } from '@/services/warehouseService';
 import { EditTarget, WarehouseNode } from '@/types/warehouse';
 
@@ -26,11 +26,11 @@ function WarehouseManager({ tree, onChanged }: { tree: WarehouseNode[]; onChange
       {editing && editing.kind !== 'location' && (
         <EditModal
           title={`${KIND_LABEL[editing.kind]} 수정`}
-          fields={NAME_EDIT_FIELDS}
-          initial={{ name: editing.name }}
+          fields={editing.kind === 'warehouse' ? WAREHOUSE_EDIT_FIELDS : NAME_EDIT_FIELDS}
+          initial={{ name: editing.name, address: editing.address ?? '' }}
           onSubmit={(v) =>
             editing.kind === 'warehouse'
-              ? renameWarehouse(editing.id, v.name)
+              ? updateWarehouse(editing.id, { name: v.name, address: v.address })
               : renameZone(editing.id, v.name)
           }
           onSaved={onChanged}

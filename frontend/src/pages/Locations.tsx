@@ -18,7 +18,12 @@ function LocationsPage() {
       <PageHeader title="창고 구조 등록 및 목록" description="창고, 구역, 위치를 관리합니다." />
       <Section title="창고, 구역, 위치 등록">
         <FormCard title="창고 등록">
-          <CodeNameForm buttonLabel="창고등록" onSubmit={createWarehouse} onCreated={reload} />
+          <CodeNameForm
+            withAddress
+            buttonLabel="창고등록"
+            onSubmit={createWarehouse}
+            onCreated={reload}
+          />
         </FormCard>
         <FormCard title="구역 등록">
           <ZoneForm tree={tree} onCreated={reload} />

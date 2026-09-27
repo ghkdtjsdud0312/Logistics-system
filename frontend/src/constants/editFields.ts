@@ -17,4 +17,9 @@ export const DRIVER_EDIT_FIELDS: EditField[] = [
   { name: 'phone', label: '연락처', required: false },
 ];
 
+export const WAREHOUSE_EDIT_FIELDS: EditField[] = [
+  { name: 'name', label: '이름' },
+  { name: 'address', label: '주소(좌표 변환용)', required: false },
+];
+
 export const NAME_EDIT_FIELDS: EditField[] = [{ name: 'name', label: '이름' }];

@@ -13,8 +13,8 @@ export const createZone = (warehouseId: number, body: CodeName) =>
 export const createLocation = (zoneId: number, code: string) =>
   unwrap<number>(apiClient.post(`/zones/${zoneId}/locations`, { code }));
 
-export const renameWarehouse = (id: number, name: string) =>
-  unwrap<number>(apiClient.put(`/warehouses/${id}`, { name }));
+export const updateWarehouse = (id: number, body: { name: string; address?: string }) =>
+  unwrap<number>(apiClient.put(`/warehouses/${id}`, body));
 
 export const deleteWarehouse = (id: number) => unwrap<null>(apiClient.delete(`/warehouses/${id}`));
 

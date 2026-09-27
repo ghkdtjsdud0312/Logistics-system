@@ -22,10 +22,16 @@ function WarehouseCards({ tree, onEdit, onDelete }: WarehouseCardsProps) {
               {w.name} <span className="text-xs font-normal text-gray-400">{w.code}</span>
             </h3>
             <RowActions
-              onEdit={() => onEdit({ kind: 'warehouse', id: w.id, name: w.name })}
+              onEdit={() =>
+                onEdit({ kind: 'warehouse', id: w.id, name: w.name, address: w.address ?? '' })
+              }
               onDelete={() => onDelete({ kind: 'warehouse', id: w.id, name: w.name })}
             />
           </div>
+          <p className="mb-2 text-xs text-gray-500">
+            {w.address ?? '주소 없음'}
+            {w.address && (w.latitude === null ? ' · 좌표 변환 실패' : ' · 좌표 등록됨')}
+          </p>
           <div className="space-y-2">
             {w.zones.length === 0 && (
               <p className="text-xs text-gray-400">등록된 구역이 없습니다.</p>
