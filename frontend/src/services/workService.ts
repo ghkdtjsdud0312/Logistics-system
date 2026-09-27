@@ -1,8 +1,9 @@
 import apiClient from '@/services/apiClient';
 import { unwrap } from '@/services/unwrap';
-import { PackingTask, PickingTask } from '@/types/work';
+import { PackingTask, PickingTask, WorkStatus } from '@/types/work';
 
-export const getPickingTasks = () => unwrap<PickingTask[]>(apiClient.get('/picking-tasks'));
+export const getPickingTasks = (status?: WorkStatus) =>
+  unwrap<PickingTask[]>(apiClient.get('/picking-tasks', { params: { status } }));
 
 export const startPicking = (id: number) =>
   unwrap<unknown>(apiClient.patch(`/picking-tasks/${id}/start`));

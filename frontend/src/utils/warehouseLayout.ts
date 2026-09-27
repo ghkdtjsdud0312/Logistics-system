@@ -1,6 +1,16 @@
 import { WarehouseNode, ZoneNode } from '@/types/warehouse';
 import { SceneBounds, WarehouseLayout } from '@/types/warehouse3d';
 
+/** 구역 바닥판을 가리키는 hover/select 코드(위치 코드와 겹치지 않는다) */
+export function zoneHoverCode(zoneId: number): string {
+  return `zone:${zoneId}`;
+}
+
+/** 방(창고) 바닥·배지를 가리키는 클릭 코드(위치·구역 코드와 겹치지 않는다) */
+export function roomHoverCode(warehouseId: number): string {
+  return `room:${warehouseId}`;
+}
+
 const CELL = 1.6;
 const LEVEL = 1.3;
 const ZONE_GAP = 4;
@@ -63,7 +73,8 @@ export function layoutWarehouses(tree: WarehouseNode[]): WarehouseLayout {
         }),
       );
       layout.slabs.push({
-        label: `${warehouse.name} ${zone.code}`,
+        zoneId: zone.id,
+        label: zone.name,
         x: offsetX + ((cols - 1) * CELL) / 2,
         z: zoneIndex * ZONE_GAP,
         width: cols * CELL + 0.6,
@@ -75,15 +86,19 @@ export function layoutWarehouses(tree: WarehouseNode[]): WarehouseLayout {
   return layout;
 }
 
-/** 카메라를 맞추기 위한 장면의 중심과 크기 */
+/**
+ * 카메라를 맞추기 위한 장면의 중심과 크기. 내용이 작아도 화면을 채우도록 여백만 살짝 둔다.
+ * 구역이 없는 창고(빈 배치)도 다룰 수 있도록 안전한 기본값을 둔다.
+ */
 export function sceneBounds(layout: WarehouseLayout): SceneBounds {
   const xs = layout.slabs.flatMap((s) => [s.x - s.width / 2, s.x + s.width / 2]);
   const zs = layout.slabs.flatMap((s) => [s.z - s.depth / 2, s.z + s.depth / 2]);
   const maxY = Math.max(1, ...layout.boxes.map((b) => b.y + LEVEL / 2));
-  const [minX, maxX] = [Math.min(...xs), Math.max(...xs)];
-  const [minZ, maxZ] = [Math.min(...zs), Math.max(...zs)];
+  const [minX, maxX] = [Math.min(...xs, 0), Math.max(...xs, 1)];
+  const [minZ, maxZ] = [Math.min(...zs, 0), Math.max(...zs, 1)];
+  const content = Math.max(maxX - minX, maxZ - minZ, maxY);
   return {
     center: { x: (minX + maxX) / 2, y: maxY / 2, z: (minZ + maxZ) / 2 },
-    size: Math.max(maxX - minX, maxZ - minZ, maxY, 6),
+    size: content * 1.3 + 1.5,
   };
 }

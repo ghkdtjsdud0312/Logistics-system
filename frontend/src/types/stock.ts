@@ -9,6 +9,7 @@ export interface StockRow {
   onHand: number;
   reserved: number;
   available: number;
+  updatedAt: string;
 }
 
 export interface StockFilter {

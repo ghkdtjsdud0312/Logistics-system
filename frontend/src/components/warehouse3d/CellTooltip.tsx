@@ -1,9 +1,18 @@
 import { CELL_STATE_LABEL } from '@/constants/cellState';
-import { HoverInfo, StockCell } from '@/types/warehouse3d';
+import { ActivePicking, HoverInfo, StockCell } from '@/types/warehouse3d';
 import { cellState } from '@/utils/stockCells';
+import { formatRelativeTime } from '@/utils/format';
 
 /** 마우스를 올린 칸의 요약 정보 */
-function CellTooltip({ hover, cell }: { hover: HoverInfo; cell?: StockCell }) {
+function CellTooltip({
+  hover,
+  cell,
+  picking,
+}: {
+  hover: HoverInfo;
+  cell?: StockCell;
+  picking?: ActivePicking;
+}) {
   return (
     <div
       className="pointer-events-none absolute z-10 rounded-md bg-gray-900/90 px-3 py-2 text-xs text-white shadow"
@@ -14,6 +23,12 @@ function CellTooltip({ hover, cell }: { hover: HoverInfo; cell?: StockCell }) {
       {cell && (
         <div className="mt-1 text-gray-300">
           현재 {cell.onHand} · 예약 {cell.reserved} · 가용 {cell.available}
+        </div>
+      )}
+      {cell && <div className="text-gray-400">변경 {formatRelativeTime(cell.updatedAt)}</div>}
+      {picking && (
+        <div className="mt-1 border-t border-white/20 pt-1 text-amber-300">
+          피킹중 {picking.taskNo} · {picking.orderNo} · {picking.productName}
         </div>
       )}
     </div>

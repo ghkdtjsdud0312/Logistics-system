@@ -22,6 +22,8 @@ export function createSceneKit(mount: HTMLElement): SceneKit {
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.maxPolarAngle = Math.PI / 2 - 0.05;
+  controls.minDistance = 2;
+  controls.maxDistance = 200;
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.9));
   const sun = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -52,10 +54,55 @@ export function createSceneKit(mount: HTMLElement): SceneKit {
   };
 }
 
+/** 장면이 보이도록 비스듬히 뒤로 물러난 카메라 위치·시선(중심)을 구한다. */
+function poseFor(bounds: SceneBounds) {
+  const { center, size } = bounds;
+  return {
+    position: new THREE.Vector3(
+      center.x + size * 0.7,
+      center.y + size * 0.9,
+      center.z + size * 1.3,
+    ),
+    target: new THREE.Vector3(center.x, center.y, center.z),
+  };
+}
+
 /** 장면 전체가 보이도록 카메라를 비스듬히 뒤로 물린다. */
 export function fitCamera(kit: SceneKit, bounds: SceneBounds) {
-  const { center, size } = bounds;
-  kit.controls.target.set(center.x, center.y, center.z);
-  kit.camera.position.set(center.x + size * 0.7, center.y + size * 0.9, center.z + size * 1.3);
+  const { position, target } = poseFor(bounds);
+  kit.camera.position.copy(position);
+  kit.controls.target.copy(target);
   kit.controls.update();
+}
+
+const easeInOutQuad = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+
+/** 지금 위치에서 bounds가 보이는 자리까지 카메라를 부드럽게 옮긴다(확대 연출). 끝나면 onDone을 부른다. */
+export function animateCameraTo(
+  kit: SceneKit,
+  bounds: SceneBounds,
+  durationMs: number,
+  onDone?: () => void,
+): () => void {
+  const { position: endPos, target: endTarget } = poseFor(bounds);
+  const startPos = kit.camera.position.clone();
+  const startTarget = kit.controls.target.clone();
+  const startTime = performance.now();
+  kit.controls.enabled = false;
+  let frame = 0;
+  const step = () => {
+    const t = Math.min(1, (performance.now() - startTime) / durationMs);
+    const eased = easeInOutQuad(t);
+    kit.camera.position.lerpVectors(startPos, endPos, eased);
+    kit.controls.target.lerpVectors(startTarget, endTarget, eased);
+    kit.controls.update();
+    if (t < 1) {
+      frame = requestAnimationFrame(step);
+    } else {
+      kit.controls.enabled = true;
+      onDone?.();
+    }
+  };
+  frame = requestAnimationFrame(step);
+  return () => cancelAnimationFrame(frame);
 }

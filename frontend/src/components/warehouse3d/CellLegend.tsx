@@ -14,6 +14,14 @@ function CellLegend() {
           {CELL_STATE_LABEL[state]}
         </li>
       ))}
+      <li className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-3 rounded-sm border-2 border-cyan-400 bg-white" />
+        최근 변경(24시간 이내)
+      </li>
+      <li className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-3 rounded-sm bg-amber-400" />
+        피킹 진행 중
+      </li>
     </ul>
   );
 }

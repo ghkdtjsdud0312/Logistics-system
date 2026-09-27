@@ -1,15 +1,18 @@
 import { CELL_STATE_LABEL } from '@/constants/cellState';
-import { StockCell } from '@/types/warehouse3d';
+import { ActivePicking, StockCell } from '@/types/warehouse3d';
 import { cellState } from '@/utils/stockCells';
+import { formatRelativeTime } from '@/utils/format';
 
 /** 클릭해서 선택한 칸의 상품별 재고 */
 function CellDetail({
   code,
   cell,
+  picking,
   onClose,
 }: {
   code: string;
   cell?: StockCell;
+  picking?: ActivePicking;
   onClose: () => void;
 }) {
   return (
@@ -25,6 +28,16 @@ function CellDetail({
           닫기 ✕
         </button>
       </div>
+      {cell && (
+        <p className="mb-2 text-xs text-gray-400">
+          최근 변경: {formatRelativeTime(cell.updatedAt)}
+        </p>
+      )}
+      {picking && (
+        <p className="mb-2 rounded bg-amber-50 px-2 py-1 text-xs text-amber-700">
+          피킹 진행 중 · {picking.taskNo} · {picking.orderNo} · {picking.productName}
+        </p>
+      )}
       {!cell || cell.products.length === 0 ? (
         <p className="text-gray-400">이 위치에는 재고가 없습니다.</p>
       ) : (
