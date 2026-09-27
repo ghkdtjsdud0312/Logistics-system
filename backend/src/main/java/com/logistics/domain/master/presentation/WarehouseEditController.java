@@ -2,6 +2,7 @@ package com.logistics.domain.master.presentation;
 
 import com.logistics.domain.master.application.WarehouseEditService;
 import com.logistics.domain.master.presentation.dto.NameRequest;
+import com.logistics.domain.master.presentation.dto.WarehouseUpdateRequest;
 import com.logistics.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,8 +18,9 @@ public class WarehouseEditController {
     private final WarehouseEditService editService;
 
     @PutMapping("/warehouses/{id}")
-    public ApiResponse<Long> renameWarehouse(@PathVariable Long id, @Valid @RequestBody NameRequest request) {
-        return ApiResponse.success(editService.renameWarehouse(id, request.name()));
+    public ApiResponse<Long> updateWarehouse(@PathVariable Long id,
+                                             @Valid @RequestBody WarehouseUpdateRequest request) {
+        return ApiResponse.success(editService.updateWarehouse(id, request.name(), request.address()));
     }
 
     @DeleteMapping("/warehouses/{id}")

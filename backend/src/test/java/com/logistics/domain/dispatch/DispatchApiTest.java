@@ -53,10 +53,13 @@ class DispatchApiTest {
         String ok = overload.replaceFirst("\"vehicleId\":\\d+", "\"vehicleId\":" + testData.vehicle(1000))
                 .replaceFirst("\"driverId\":\\d+", "\"driverId\":" + testData.driver());
         String created = mockMvc.perform(post("/api/dispatches").contentType(MediaType.APPLICATION_JSON).content(ok))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.status").value("REGISTERED"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.status").value("LOADING"))
                 .andExpect(jsonPath("$.data.shipmentCount").value(1)).andReturn().getResponse().getContentAsString();
         String dispatchId = first(created, "$.data.id");
 
+        mockMvc.perform(patch("/api/dispatches/" + dispatchId + "/start")).andExpect(status().isConflict());
+        mockMvc.perform(patch("/api/dispatches/" + dispatchId + "/close"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("REGISTERED"));
         mockMvc.perform(patch("/api/dispatches/" + dispatchId + "/start"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("IN_TRANSIT"));
         mockMvc.perform(patch("/api/dispatches/" + dispatchId + "/cancel")).andExpect(status().isConflict());

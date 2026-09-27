@@ -27,6 +27,7 @@ public class Shipment extends BaseTimeEntity {
     private Long orderId;
 
     private Long dispatchId;
+    private Integer stopOrder;
     private LocalDateTime deliveredAt;
     private String failDetail;
 
@@ -48,6 +49,12 @@ public class Shipment extends BaseTimeEntity {
     public void unassign() {
         moveTo(DISPATCHED, LOADED);
         this.dispatchId = null;
+        this.stopOrder = null;
+    }
+
+    /** 배차 안에서의 방문 순서(1부터). */
+    public void assignStopOrder(int stopOrder) {
+        this.stopOrder = stopOrder;
     }
 
     public void startDelivery() {

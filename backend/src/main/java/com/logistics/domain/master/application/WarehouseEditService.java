@@ -18,10 +18,22 @@ public class WarehouseEditService {
 
     private final WarehouseRepository warehouseRepository;
     private final ReferenceGuard referenceGuard;
+    private final WarehouseGeocoder warehouseGeocoder;
 
     public Long renameWarehouse(Long id, String name) {
         Warehouse warehouse = getWarehouse(id);
         warehouse.rename(name);
+        return warehouse.getId();
+    }
+
+    /** 이름과 주소를 바꾼다. 주소가 달라졌거나 좌표가 없으면 다시 변환한다. */
+    public Long updateWarehouse(Long id, String name, String address) {
+        Warehouse warehouse = getWarehouse(id);
+        warehouse.rename(name);
+        String normalized = address == null || address.isBlank() ? null : address.trim();
+        if (!java.util.Objects.equals(normalized, warehouse.getAddress()) || warehouse.getLatitude() == null) {
+            warehouseGeocoder.locate(warehouse, normalized);
+        }
         return warehouse.getId();
     }
 

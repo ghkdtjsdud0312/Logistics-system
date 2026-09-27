@@ -4,6 +4,7 @@ import com.logistics.domain.delivery.application.DeliveryService;
 import com.logistics.domain.delivery.application.DeliveryStatusQueryService;
 import com.logistics.domain.delivery.application.ShipmentFailedEvent;
 import com.logistics.domain.delivery.presentation.dto.DeliveryStatusResponse;
+import com.logistics.domain.dispatch.application.DispatchLoadingService;
 import com.logistics.domain.dispatch.application.DispatchRegistrationService;
 import com.logistics.domain.dispatch.application.DispatchService;
 import com.logistics.domain.dispatch.application.RegisterDispatchCommand;
@@ -50,6 +51,7 @@ class DeliveryFlowTest {
     @Autowired private LoadingService loadingService;
     @Autowired private DispatchRegistrationService registrationService;
     @Autowired private DispatchService dispatchService;
+    @Autowired private DispatchLoadingService loadingDispatchService;
     @Autowired private DeliveryService deliveryService;
     @Autowired private DeliveryStatusQueryService statusQueryService;
     @Autowired private OrderService orderService;
@@ -78,6 +80,7 @@ class DeliveryFlowTest {
         dispatch = registrationService.register(new RegisterDispatchCommand(vehicleId, driverId,
                 LocalDateTime.of(2026, 9, 25, 13, 0), LocalDateTime.of(2026, 9, 25, 15, 0),
                 List.of(first.getId(), second.getId())));
+        loadingDispatchService.close(dispatch.getId());
         dispatchService.start(dispatch.getId());
     }
 

@@ -1,5 +1,6 @@
 package com.logistics.support;
 
+import com.logistics.domain.dispatch.application.DispatchLoadingService;
 import com.logistics.domain.dispatch.application.DispatchRegistrationService;
 import com.logistics.domain.dispatch.application.DispatchService;
 import com.logistics.domain.dispatch.application.RegisterDispatchCommand;
@@ -34,22 +35,29 @@ public class TestFlow {
     private final LoadingService loadingService;
     private final DispatchRegistrationService registrationService;
     private final DispatchService dispatchService;
+    private final DispatchLoadingService loadingDispatchService;
 
     /** 포장완료 주문을 상차·배차·배송 시작까지 진행하고 배송중인 Shipment ID를 반환한다. */
     public Long deliveringShipment(int quantity) {
         Long shipmentId = loadingService.load(List.of(packedOrder(0.5, quantity))).get(0).getId();
         Long dispatchId = registrationService.register(new RegisterDispatchCommand(testData.vehicle(1000),
                 testData.driver(), LocalDateTime.now(), LocalDateTime.now().plusHours(2), List.of(shipmentId))).getId();
+        loadingDispatchService.close(dispatchId);
         dispatchService.start(dispatchId);
         return shipmentId;
     }
 
     /** 상품·재고·주문을 만들고 포장완료까지 진행한 뒤 주문 ID를 반환한다. */
     public Long packedOrder(double unitWeightKg, int quantity) {
+        return packedOrder(unitWeightKg, quantity, "서울시 강남구");
+    }
+
+    /** 배송지 주소를 지정해 포장완료 주문을 만든다. */
+    public Long packedOrder(double unitWeightKg, int quantity, String address) {
         long seed = System.nanoTime();
         Long productId = testData.product("P" + seed, unitWeightKg);
         testData.stock(productId, testData.locations("L" + seed).get(0), quantity);
-        Long orderId = orderService.create(new CreateOrderCommand("김철수", "서울시 강남구", "010",
+        Long orderId = orderService.create(new CreateOrderCommand("김철수", address, "010",
                 List.of(new Line(productId, quantity)))).getId();
         releaseService.release(orderId);
         for (PickingTaskResponse task : workTaskQueryService.pickingTasks(WorkStatus.WAITING)) {

@@ -96,6 +96,7 @@ class OrderJourneyE2ETest {
         long driverId = ((Number) JsonPath.read(call(HttpMethod.GET, "/api/drivers", null), "$.data[0].id")).longValue();
         long dispatchId = id(call(HttpMethod.POST, "/api/dispatches", "{\"vehicleId\":" + vehicleId + ",\"driverId\":" + driverId
                 + ",\"plannedStartAt\":\"2026-09-25T13:00:00\",\"plannedArrivalAt\":\"2026-09-25T15:00:00\",\"shipmentIds\":[" + shipmentId + "]}"));
+        call(HttpMethod.PATCH, "/api/dispatches/" + dispatchId + "/close", null);
         call(HttpMethod.PATCH, "/api/dispatches/" + dispatchId + "/start", null);
         return shipmentId;
     }

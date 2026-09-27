@@ -49,6 +49,10 @@ public enum ErrorCode {
     VEHICLE_OVERLOAD(HttpStatus.UNPROCESSABLE_ENTITY, "DP004", "차량 적재량을 초과했습니다."),
     VEHICLE_UNAVAILABLE(HttpStatus.CONFLICT, "DP005", "선택한 차량은 배차할 수 없는 상태입니다."),
     DRIVER_UNAVAILABLE(HttpStatus.CONFLICT, "DP006", "선택한 기사는 배차할 수 없는 상태입니다."),
+    DISPATCH_NOT_LOADING(HttpStatus.CONFLICT, "DP007", "적재중인 배차에서만 화물을 변경하거나 마감할 수 있습니다."),
+    DISPATCH_EMPTY(HttpStatus.CONFLICT, "DP008", "화물이 없는 배차는 마감할 수 없습니다."),
+    ROUTE_ORIGIN_MISSING(HttpStatus.UNPROCESSABLE_ENTITY, "DP009", "출발지 창고와 그 좌표가 있어야 경로를 최적화할 수 있습니다."),
+    INVALID_ROUTE_ORDER(HttpStatus.UNPROCESSABLE_ENTITY, "DP010", "담긴 배송 전체를 한 번씩만 포함해야 합니다."),
 
     // Delivery
     SHIPMENT_NOT_IN_DELIVERY(HttpStatus.CONFLICT, "DV001", "배송중인 건만 완료·실패 처리할 수 있습니다."),

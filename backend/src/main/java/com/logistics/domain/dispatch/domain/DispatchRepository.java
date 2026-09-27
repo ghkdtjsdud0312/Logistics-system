@@ -12,7 +12,7 @@ public interface DispatchRepository {
     /** status가 null이면 전체, 최신순 */
     List<Dispatch> findAllByStatus(DispatchStatus status);
 
-    /** 배차완료(REGISTERED) 또는 배송중(IN_TRANSIT)인 배차에 이미 배정되어 있는지 */
+    /** 적재중(LOADING)·출발대기(REGISTERED)·배송중(IN_TRANSIT)인 배차에 이미 배정되어 있는지 */
     boolean existsActiveByVehicleId(Long vehicleId);
 
     boolean existsActiveByDriverId(Long driverId);

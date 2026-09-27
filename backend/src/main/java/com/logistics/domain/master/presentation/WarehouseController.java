@@ -3,6 +3,7 @@ package com.logistics.domain.master.presentation;
 import com.logistics.domain.master.application.WarehouseService;
 import com.logistics.domain.master.presentation.dto.CodeNameRequest;
 import com.logistics.domain.master.presentation.dto.LocationCreateRequest;
+import com.logistics.domain.master.presentation.dto.WarehouseCreateRequest;
 import com.logistics.domain.master.presentation.dto.WarehouseTreeResponse;
 import com.logistics.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,8 +24,9 @@ public class WarehouseController {
 
     @PostMapping("/warehouses")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Long> createWarehouse(@Valid @RequestBody CodeNameRequest request) {
-        return ApiResponse.success(warehouseService.createWarehouse(request.code(), request.name()).getId());
+    public ApiResponse<Long> createWarehouse(@Valid @RequestBody WarehouseCreateRequest request) {
+        return ApiResponse.success(
+                warehouseService.createWarehouse(request.code(), request.name(), request.address()).getId());
     }
 
     @PostMapping("/warehouses/{id}/zones")

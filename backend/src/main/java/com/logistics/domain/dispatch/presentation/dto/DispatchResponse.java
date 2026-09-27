@@ -18,12 +18,19 @@ public record DispatchResponse(
         LocalDateTime plannedArrivalAt,
         LocalDateTime startedAt,
         double totalWeightKg,
+        double capacityKg,
+        Long warehouseId,
+        RouteView.Origin origin,
+        List<RouteView.Stop> stops,
+        Double totalDistanceKm,
         int shipmentCount,
         List<Long> shipmentIds
 ) {
-    public static DispatchResponse of(Dispatch d, Vehicle vehicle, Driver driver, List<Long> shipmentIds) {
+    public static DispatchResponse of(Dispatch d, Vehicle vehicle, Driver driver, List<Long> shipmentIds,
+                                      RouteView route) {
         return new DispatchResponse(d.getId(), d.getDispatchNo(), d.getStatus(), vehicle.getVehicleNumber(),
                 driver.getName(), d.getPlannedStartAt(), d.getPlannedArrivalAt(), d.getStartedAt(),
-                d.getTotalWeightKg(), shipmentIds.size(), shipmentIds);
+                d.getTotalWeightKg(), vehicle.getCapacityKg(), d.getWarehouseId(),
+                route.origin(), route.stops(), route.totalDistanceKm(), shipmentIds.size(), shipmentIds);
     }
 }

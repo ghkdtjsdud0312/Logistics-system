@@ -27,6 +27,7 @@ public class DispatchQueryService {
     private final VehicleService vehicleService;
     private final DriverService driverService;
     private final ShipmentService shipmentService;
+    private final DispatchRouteService routeService;
 
     public List<DispatchResponse> getList(DispatchStatus status) {
         return dispatchRepository.findAllByStatus(status).stream().map(this::toResponse).toList();
@@ -39,8 +40,8 @@ public class DispatchQueryService {
     public DispatchResponse toResponse(Dispatch dispatch) {
         Vehicle vehicle = vehicleService.getVehicle(dispatch.getVehicleId());
         Driver driver = driverService.getDriver(dispatch.getDriverId());
-        List<Long> shipmentIds = shipmentService.getByDispatchId(dispatch.getId()).stream()
-                .map(Shipment::getId).toList();
-        return DispatchResponse.of(dispatch, vehicle, driver, shipmentIds);
+        List<Shipment> shipments = shipmentService.getByDispatchId(dispatch.getId());
+        return DispatchResponse.of(dispatch, vehicle, driver, shipments.stream().map(Shipment::getId).toList(),
+                routeService.view(dispatch, shipments));
     }
 }

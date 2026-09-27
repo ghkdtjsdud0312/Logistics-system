@@ -28,6 +28,8 @@ public class Order extends BaseTimeEntity {
 
     private String customerName;
     private String address;
+    private Double latitude;
+    private Double longitude;
     private String phone;
     private LocalDateTime orderedAt;
 
@@ -45,6 +47,16 @@ public class Order extends BaseTimeEntity {
         this.address = address;
         this.phone = phone;
         this.orderedAt = orderedAt;
+    }
+
+    /** 주소에서 변환한 좌표를 기록한다. */
+    public void locate(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public boolean hasCoordinate() {
+        return latitude != null && longitude != null;
     }
 
     public void addItem(Long productId, int quantity) {

@@ -55,12 +55,13 @@ public class DispatchService {
 
     public Dispatch cancel(Long dispatchId) {
         Dispatch dispatch = get(dispatchId);
+        DispatchStatus from = dispatch.getStatus();
         dispatch.cancel();
         for (Shipment shipment : shipmentService.getByDispatchId(dispatchId)) {
             shipment.unassign();
             orderShippingService.revertToLoaded(shipment.getOrderId());
         }
-        publish(dispatch, "CANCEL", DispatchStatus.REGISTERED, DispatchStatus.CANCELLED);
+        publish(dispatch, "CANCEL", from, DispatchStatus.CANCELLED);
         return dispatch;
     }
 

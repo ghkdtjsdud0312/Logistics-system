@@ -19,6 +19,7 @@ import java.util.List;
 public class WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
+    private final WarehouseGeocoder warehouseGeocoder;
 
     public List<Warehouse> getTree() {
         return warehouseRepository.findAll();
@@ -29,12 +30,34 @@ public class WarehouseService {
         return warehouseRepository.findAll().stream().map(WarehouseTreeResponse::from).toList();
     }
 
+    public Warehouse get(Long id) {
+        return warehouseRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.WAREHOUSE_NOT_FOUND));
+    }
+
+    /** 좌표가 없으면 주소로 한 번 더 변환을 시도한 창고를 돌려준다. */
+    @Transactional
+    public Warehouse getLocated(Long id) {
+        Warehouse warehouse = get(id);
+        if (warehouse.getLatitude() == null && warehouse.getAddress() != null) {
+            warehouseGeocoder.locate(warehouse, warehouse.getAddress());
+        }
+        return warehouse;
+    }
+
     @Transactional
     public Warehouse createWarehouse(String code, String name) {
+        return createWarehouse(code, name, null);
+    }
+
+    @Transactional
+    public Warehouse createWarehouse(String code, String name, String address) {
         if (warehouseRepository.existsByCode(code)) {
             throw new BusinessException(ErrorCode.DUPLICATE_CODE);
         }
-        return warehouseRepository.save(new Warehouse(code, name));
+        Warehouse warehouse = new Warehouse(code, name);
+        warehouseGeocoder.locate(warehouse, address);
+        return warehouseRepository.save(warehouse);
     }
 
     @Transactional

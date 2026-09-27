@@ -8,6 +8,7 @@ import com.logistics.domain.order.domain.OrderRepository;
 import com.logistics.domain.order.domain.OrderSearchCriteria;
 import com.logistics.domain.order.domain.OrderStatus;
 import com.logistics.global.error.BusinessException;
+import com.logistics.global.geocoding.GeocodingClient;
 import com.logistics.global.error.ErrorCode;
 import com.logistics.global.event.StatusChangedEventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class OrderService {
     private final StockReservationService reservationService;
     private final StatusChangedEventPublisher eventPublisher;
     private final Clock clock;
+    private final GeocodingClient geocodingClient;
 
     public Order create(CreateOrderCommand command) {
         Set<Long> productIds = command.items().stream()
@@ -38,6 +40,7 @@ public class OrderService {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_FOUND);
         }
         Order order = new Order(command.customerName(), command.address(), command.phone(), LocalDateTime.now(clock));
+        geocodingClient.geocode(order.getAddress()).ifPresent(c -> order.locate(c.latitude(), c.longitude()));
         command.items().forEach(line -> order.addItem(line.productId(), line.quantity()));
         orderRepository.save(order);
         order.assignNo();
@@ -64,6 +67,14 @@ public class OrderService {
     public java.util.Map<Long, Order> getOrderMap(java.util.Collection<Long> ids) {
         return orderRepository.findAllByIds(ids).stream()
                 .collect(Collectors.toMap(Order::getId, java.util.function.Function.identity()));
+    }
+
+    /** 좌표가 없는 주문은 주소로 한 번 더 변환을 시도해 돌려준다. */
+    public java.util.Map<Long, Order> getLocatedOrderMap(java.util.Collection<Long> ids) {
+        java.util.Map<Long, Order> orders = getOrderMap(ids);
+        orders.values().stream().filter(o -> !o.hasCoordinate()).forEach(o ->
+                geocodingClient.geocode(o.getAddress()).ifPresent(c -> o.locate(c.latitude(), c.longitude())));
+        return orders;
     }
 
     @Transactional(readOnly = true)

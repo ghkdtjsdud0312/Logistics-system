@@ -28,13 +28,14 @@ public class Dispatch extends BaseTimeEntity {
 
     private Long vehicleId;
     private Long driverId;
+    private Long warehouseId;
     private LocalDateTime plannedStartAt;
     private LocalDateTime plannedArrivalAt;
     private LocalDateTime startedAt;
     private double totalWeightKg;
 
     @Enumerated(EnumType.STRING)
-    private DispatchStatus status = REGISTERED;
+    private DispatchStatus status = LOADING;
 
     @Version
     private Long version;
@@ -48,6 +49,16 @@ public class Dispatch extends BaseTimeEntity {
         this.totalWeightKg = totalWeightKg;
     }
 
+    public void assignWarehouse(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    /** 적재중일 때만 출발지를 바꿀 수 있다. */
+    public void changeWarehouse(Long warehouseId) {
+        requireLoading();
+        this.warehouseId = warehouseId;
+    }
+
     public void assignNo() {
         this.dispatchNo = String.format("DSP-%03d", id);
     }
@@ -57,8 +68,26 @@ public class Dispatch extends BaseTimeEntity {
         this.startedAt = now;
     }
 
+    public void requireLoading() {
+        if (status != LOADING) {
+            throw new BusinessException(ErrorCode.DISPATCH_NOT_LOADING);
+        }
+    }
+
+    public void updateWeight(double totalWeightKg) {
+        requireLoading();
+        this.totalWeightKg = totalWeightKg;
+    }
+
+    public void close() {
+        moveTo(LOADING, REGISTERED);
+    }
+
     public void cancel() {
-        moveTo(REGISTERED, CANCELLED);
+        if (status != LOADING && status != REGISTERED) {
+            throw new BusinessException(ErrorCode.INVALID_DISPATCH_TRANSITION);
+        }
+        this.status = CANCELLED;
     }
 
     public void complete() {

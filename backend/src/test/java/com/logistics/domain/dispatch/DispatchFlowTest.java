@@ -1,5 +1,6 @@
 package com.logistics.domain.dispatch;
 
+import com.logistics.domain.dispatch.application.DispatchLoadingService;
 import com.logistics.domain.dispatch.application.DispatchRegistrationService;
 import com.logistics.domain.dispatch.application.DispatchService;
 import com.logistics.domain.dispatch.application.RegisterDispatchCommand;
@@ -42,6 +43,7 @@ class DispatchFlowTest {
     @Autowired private ShipmentService shipmentService;
     @Autowired private DispatchRegistrationService registrationService;
     @Autowired private DispatchService dispatchService;
+    @Autowired private DispatchLoadingService loadingDispatchService;
     @Autowired private OrderService orderService;
     @Autowired private VehicleService vehicleService;
     @Autowired private DriverService driverService;
@@ -66,6 +68,10 @@ class DispatchFlowTest {
                 LocalDateTime.of(2026, 9, 25, 13, 0), LocalDateTime.of(2026, 9, 25, 15, 0), List.of(shipment.getId())));
     }
 
+    private Dispatch registerAndClose(Long vehicleId, Long driverId) {
+        return loadingDispatchService.close(register(vehicleId, driverId).getId());
+    }
+
     @Test
     @DisplayName("상차하면 주문이 상차완료가 되고 Shipment가 만들어지며 포장 전 주문은 상차할 수 없다")
     void load() {
@@ -76,12 +82,12 @@ class DispatchFlowTest {
     }
 
     @Test
-    @DisplayName("적재량 이내면 배차가 등록되어 Shipment·주문이 배차완료가 되고 총 중량이 기록된다")
+    @DisplayName("적재량 이내면 배차가 LOADING으로 생성되어 Shipment·주문이 배차완료가 되고 총 중량이 기록된다")
     void register_success() {
         Dispatch dispatch = register(testData.vehicle(1000), testData.driver());
 
         assertThat(dispatch.getDispatchNo()).isEqualTo("DSP-%03d".formatted(dispatch.getId()));
-        assertThat(dispatch.getStatus()).isEqualTo(DispatchStatus.REGISTERED);
+        assertThat(dispatch.getStatus()).isEqualTo(DispatchStatus.LOADING);
         assertThat(dispatch.getTotalWeightKg()).isEqualTo(5.0);
         assertThat(shipment.getStatus()).isEqualTo(ShipmentStatus.DISPATCHED);
         assertThat(orderService.get(orderId).getStatus()).isEqualTo(OrderStatus.DISPATCHED);
@@ -92,7 +98,7 @@ class DispatchFlowTest {
     void register_capacityBoundary() {
         assertThat(errorOf(() -> register(testData.vehicle(4.9), testData.driver()))).isEqualTo(ErrorCode.VEHICLE_OVERLOAD);
         assertThat(shipment.getStatus()).isEqualTo(ShipmentStatus.LOADED);
-        assertThat(register(testData.vehicle(5.0), testData.driver()).getStatus()).isEqualTo(DispatchStatus.REGISTERED);
+        assertThat(register(testData.vehicle(5.0), testData.driver()).getStatus()).isEqualTo(DispatchStatus.LOADING);
     }
 
     @Test
@@ -121,7 +127,7 @@ class DispatchFlowTest {
     void start() {
         Long vehicleId = testData.vehicle(1000);
         Long driverId = testData.driver();
-        Dispatch dispatch = dispatchService.start(register(vehicleId, driverId).getId());
+        Dispatch dispatch = dispatchService.start(registerAndClose(vehicleId, driverId).getId());
 
         assertThat(dispatch.getStatus()).isEqualTo(DispatchStatus.IN_TRANSIT);
         assertThat(dispatch.getStartedAt()).isNotNull();
@@ -143,7 +149,7 @@ class DispatchFlowTest {
         assertThat(shipment.getDispatchId()).isNull();
         assertThat(orderService.get(orderId).getStatus()).isEqualTo(OrderStatus.LOADED);
 
-        Dispatch again = register(testData.vehicle(1000), testData.driver());
+        Dispatch again = registerAndClose(testData.vehicle(1000), testData.driver());
         dispatchService.start(again.getId());
         assertThat(errorOf(() -> dispatchService.cancel(again.getId()))).isEqualTo(ErrorCode.INVALID_DISPATCH_TRANSITION);
         assertThat(shipmentService.getByDispatchId(again.getId())).hasSize(1);

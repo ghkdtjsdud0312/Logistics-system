@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /** 배차·배송 도메인이 Shipment를 조회할 때 쓰는 서비스 */
@@ -39,6 +40,9 @@ public class ShipmentService {
     }
 
     public List<Shipment> getByDispatchId(Long dispatchId) {
-        return shipmentRepository.findAllByDispatchId(dispatchId);
+        return shipmentRepository.findAllByDispatchId(dispatchId).stream()
+                .sorted(Comparator.comparing(Shipment::getStopOrder, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Shipment::getId))
+                .toList();
     }
 }

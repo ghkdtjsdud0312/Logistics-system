@@ -28,6 +28,10 @@ public class Warehouse extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
+    private String address;
+    private Double latitude;
+    private Double longitude;
+
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("code")
     private List<Zone> zones = new ArrayList<>();
@@ -48,6 +52,13 @@ public class Warehouse extends BaseTimeEntity {
 
     public void rename(String name) {
         this.name = name;
+    }
+
+    /** 주소와 그 주소에서 변환한 좌표(변환 실패 시 null)를 함께 바꾼다. */
+    public void relocate(String address, Double latitude, Double longitude) {
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     /** 위치가 하나도 없는 구역만 지울 수 있다. */

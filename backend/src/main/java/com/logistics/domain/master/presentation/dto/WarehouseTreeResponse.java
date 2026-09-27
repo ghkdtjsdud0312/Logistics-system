@@ -7,7 +7,8 @@ import com.logistics.domain.master.domain.Zone;
 import java.util.List;
 
 /** 창고 → 구역 → 위치 트리 */
-public record WarehouseTreeResponse(Long id, String code, String name, List<ZoneNode> zones) {
+public record WarehouseTreeResponse(Long id, String code, String name, String address,
+                                    Double latitude, Double longitude, List<ZoneNode> zones) {
 
     public record ZoneNode(Long id, String code, String name, List<LocationNode> locations) {
     }
@@ -17,6 +18,7 @@ public record WarehouseTreeResponse(Long id, String code, String name, List<Zone
 
     public static WarehouseTreeResponse from(Warehouse warehouse) {
         return new WarehouseTreeResponse(warehouse.getId(), warehouse.getCode(), warehouse.getName(),
+                warehouse.getAddress(), warehouse.getLatitude(), warehouse.getLongitude(),
                 warehouse.getZones().stream().map(WarehouseTreeResponse::zoneNode).toList());
     }
 

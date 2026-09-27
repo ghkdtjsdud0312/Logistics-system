@@ -47,6 +47,7 @@ class DeliveryApiTest {
         String dispatch = postJson("/api/dispatches", "{\"vehicleId\":" + testData.vehicle(1000) + ",\"driverId\":"
                 + testData.driver() + ",\"plannedStartAt\":\"2026-09-25T13:00:00\",\"plannedArrivalAt\":\"2026-09-25T15:00:00\","
                 + "\"shipmentIds\":[" + s1 + "," + s2 + "]}");
+        mockMvc.perform(patch("/api/dispatches/" + read(dispatch, "$.data.id") + "/close")).andExpect(status().isOk());
         mockMvc.perform(patch("/api/dispatches/" + read(dispatch, "$.data.id") + "/start")).andExpect(status().isOk());
 
         mockMvc.perform(get("/api/delivery-status"))

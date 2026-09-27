@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DispatchRepositoryImpl implements DispatchRepository {
 
-    private static final List<DispatchStatus> ACTIVE = List.of(DispatchStatus.REGISTERED, DispatchStatus.IN_TRANSIT);
+    private static final List<DispatchStatus> ACTIVE = List.of(DispatchStatus.LOADING, DispatchStatus.REGISTERED, DispatchStatus.IN_TRANSIT);
 
     private final DispatchJpaRepository jpaRepository;
 
