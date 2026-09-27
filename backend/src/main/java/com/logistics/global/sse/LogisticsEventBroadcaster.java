@@ -5,7 +5,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -34,7 +33,8 @@ public class LogisticsEventBroadcaster {
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(SseEmitter.event().name(eventName).data(data));
-            } catch (IOException e) {
+            } catch (Exception e) {
+                // 클라이언트가 이미 연결을 끊었을 때 IOException 또는(드물게) IllegalStateException이 난다.
                 log.warn("SSE 전송 실패, emitter를 제거한다", e);
                 emitter.completeWithError(e);
                 emitters.remove(emitter);
@@ -47,7 +47,7 @@ public class LogisticsEventBroadcaster {
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(SseEmitter.event().comment("heartbeat"));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 emitter.completeWithError(e);
                 emitters.remove(emitter);
             }

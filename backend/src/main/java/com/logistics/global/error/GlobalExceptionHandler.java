@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
@@ -42,6 +43,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("handleOptimisticLock", ex);
         ErrorCode errorCode = ErrorCode.CONCURRENT_UPDATE;
         return ResponseEntity.status(errorCode.getStatus()).body(ErrorResponse.of(errorCode));
+    }
+
+    /**
+     * SSE 등 비동기 응답에서 클라이언트가 이미 연결을 끊었을 때 발생한다. 스트림이 깨진 뒤라
+     * JSON 오류 본문을 쓸 수 없으므로(Content-Type이 이미 text/event-stream 등으로 굳어 있음)
+     * 본문 없이 로그만 남기고 끝낸다.
+     */
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    protected void handleAsyncRequestNotUsable(AsyncRequestNotUsableException ex) {
+        log.debug("클라이언트가 연결을 끊어 응답을 쓸 수 없다", ex);
     }
 
     @ExceptionHandler(Exception.class)
