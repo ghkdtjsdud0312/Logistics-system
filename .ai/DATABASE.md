@@ -14,7 +14,7 @@
 | 테이블 | 주요 컬럼 | 제약 |
 |---|---|---|
 | product | id, code, name, unit, unit_weight_kg, active | code UNIQUE |
-| warehouse | id, code, name | code UNIQUE |
+| warehouse | id, code, name, address(null), latitude(null), longitude(null) | code UNIQUE |
 | zone | id, warehouse_id, code, name | (warehouse_id, code) UNIQUE |
 | location | id, zone_id, code | code UNIQUE (`A-01-01`) |
 | vehicle | id, vehicle_number, vehicle_type, capacity_kg, status | number UNIQUE (기존 재사용) |
@@ -29,7 +29,7 @@
 ### 주문·작업
 | 테이블 | 주요 컬럼 | 제약 |
 |---|---|---|
-| orders | id, order_no, customer_name, address, phone, status, ordered_at, version | order_no UNIQUE |
+| orders | id, order_no, customer_name, address, latitude(null), longitude(null), phone, status, ordered_at, version | order_no UNIQUE |
 | order_item | id, order_id(FK), product_id, quantity, picked_qty, loaded_qty, delivered_qty | quantity > 0 |
 | stock_reservation | id, order_item_id, location_id, quantity | quantity > 0 |
 | picking_task | id, task_no, order_id, location_id, product_id, requested_qty, picked_qty, status | picked_qty <= requested_qty |
@@ -38,8 +38,8 @@
 ### 상차·배차·배송
 | 테이블 | 주요 컬럼 | 제약 |
 |---|---|---|
-| shipment | id, order_id, dispatch_id(null), status, delivered_at, fail_reason, fail_detail | order_id UNIQUE |
-| dispatch | id, dispatch_no, vehicle_id, driver_id, status, planned_start_at, planned_arrival_at, started_at, version | dispatch_no UNIQUE |
+| shipment | id, order_id, dispatch_id(null), stop_order(null), status, delivered_at, fail_reason, fail_detail | order_id UNIQUE |
+| dispatch | id, dispatch_no, vehicle_id, driver_id, warehouse_id(null), status, planned_start_at, planned_arrival_at, started_at, version | dispatch_no UNIQUE |
 
 ### 반품·감사·이벤트
 | 테이블 | 주요 컬럼 | 제약 |

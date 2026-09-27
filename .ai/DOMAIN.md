@@ -41,10 +41,12 @@
 
 ### DispatchStatus
 
-`REGISTERED(배차완료) → IN_TRANSIT(배송중) → COMPLETED`
+`LOADING(적재중) → REGISTERED(출발대기) → IN_TRANSIT(배송중) → COMPLETED`
+
+- `LOADING`: 화물 없이 생성되며 화물을 추가·제외할 수 있다. `close`로 `REGISTERED`가 되면 화물이 고정되고, `start`(수동)로 출발한다(ADR-023).
 
 - 소속 Shipment가 모두 종결(`DELIVERED`/`FAILED`)되면 자동으로 `COMPLETED`.
-- 배송 시작 전(`REGISTERED`)에만 취소 가능(`CANCELLED`). 취소 시 Shipment는 `LOADED`로, 주문은 `LOADED`로 되돌린다.
+- 배송 시작 전(`LOADING`·`REGISTERED`)에만 취소 가능(`CANCELLED`). 취소 시 Shipment는 `LOADED`로, 주문은 `LOADED`로 되돌린다.
 
 ### 차량·기사 상태
 
@@ -81,9 +83,15 @@
 ```text
 sum(shipment.items.quantity * product.unitWeightKg) <= vehicle.capacityKg
 vehicle.status == AVAILABLE && driver.status == AVAILABLE
-vehicle/driver가 REGISTERED 또는 IN_TRANSIT 배차에 속하지 않음
+vehicle/driver가 LOADING·REGISTERED·IN_TRANSIT 배차에 속하지 않음
 shipment.status == LOADED (다른 배차에 속하지 않음)
 ```
+
+## 방문 순서와 적재 순서 (ADR-024)
+
+- Order·Warehouse는 주소에서 변환한 좌표(위도·경도, 없을 수 있음)를 가진다. Dispatch는 출발지 `warehouseId`를 ID로만 참조한다.
+- Shipment의 `stopOrder`가 방문 순서다. 적재 중(`LOADING`)에만 바꿀 수 있고 마감 후에는 고정된다.
+- 경로 최적화는 Nearest Neighbor로 초안을 만들고 2-opt로 개선하는 순수 함수이며 직선거리 기준이다. 적재 순서는 방문 순서의 역순(마지막 방문지를 먼저 싣는다).
 
 ## 배송 실패와 반품
 

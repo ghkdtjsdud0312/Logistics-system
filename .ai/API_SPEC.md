@@ -18,7 +18,7 @@
 |---|---|---|---|
 | POST | `/products` | 상품 등록 | `{code, name, unit, unitWeightKg}` |
 | GET | `/products?keyword=` | 상품 목록 | - |
-| POST | `/warehouses` | 창고 등록 | `{code, name}` |
+| POST | `/warehouses` | 창고 등록. `address`가 있으면 좌표로 변환해 저장 | `{code, name, address?}` |
 | POST | `/warehouses/{id}/zones` | 구역 등록 | `{code, name}` |
 | POST | `/zones/{id}/locations` | 위치 등록 | `{code}` |
 | GET | `/warehouses/tree` | 창고→구역→위치 트리 | - |
@@ -30,7 +30,7 @@
 | PATCH | `/drivers/{id}/status` | 기사 상태 변경 | `{status}` |
 | PUT | `/products/{id}` | 상품 수정 (code 변경 불가) | `{name, unit, unitWeightKg}` |
 | DELETE | `/products/{id}` | 상품 삭제 | - |
-| PUT | `/warehouses/{id}` | 창고 수정 | `{name}` |
+| PUT | `/warehouses/{id}` | 창고 수정. `address`가 바뀌면 좌표를 다시 변환 | `{name, address?}` |
 | DELETE | `/warehouses/{id}` | 창고 삭제 | - |
 | PUT | `/zones/{id}` | 구역 수정 | `{name}` |
 | DELETE | `/zones/{id}` | 구역 삭제 | - |
@@ -113,13 +113,25 @@
 | GET | `/loadings/waiting-orders` | 상차 대기(포장완료) 주문 | - |
 | POST | `/loadings` | 상차완료, 주문별 Shipment 생성 | `{orderIds: [1,2]}` |
 | GET | `/shipments?status=&dispatchId=` | Shipment 목록(배차 대기는 `status=LOADED`) | - |
-| POST | `/dispatches` | 배차 등록 | `{vehicleId, driverId, plannedStartAt, plannedArrivalAt, shipmentIds}` |
+| POST | `/dispatches` | 배차 생성(`LOADING`). 화물 없이 생성 가능 | `{vehicleId, driverId, warehouseId?, plannedStartAt, plannedArrivalAt, shipmentIds?}` |
 | GET | `/dispatches?status=` | 배차 목록 | - |
 | GET | `/dispatches/{id}` | 배차 상세 | - |
-| PATCH | `/dispatches/{id}/start` | 배송 시작 | - |
-| PATCH | `/dispatches/{id}/cancel` | 배차 취소(REGISTERED만) | - |
+| POST | `/dispatches/{id}/shipments` | 화물 추가(LOADING만) | `{shipmentIds}` |
+| DELETE | `/dispatches/{id}/shipments/{shipmentId}` | 화물 제외(LOADING만) | - |
+| PATCH | `/dispatches/{id}/warehouse` | 출발지 창고 지정·변경(LOADING만) | `{warehouseId}` |
+| PUT | `/dispatches/{id}/route` | 방문 순서 수동 지정(LOADING만) | `{shipmentIds}` (방문 순서대로, 담긴 화물 전체) |
+| POST | `/dispatches/{id}/route/optimize` | 경로 최적화 후 방문 순서 저장(LOADING만) | - |
+| PATCH | `/dispatches/{id}/close` | 적재 마감 `LOADING→REGISTERED`(화물 1건 이상) | - |
+| PATCH | `/dispatches/{id}/start` | 배송 시작 `REGISTERED→IN_TRANSIT`(수동 출발) | - |
+| PATCH | `/dispatches/{id}/cancel` | 배차 취소(LOADING·REGISTERED) | - |
 
-- `POST /dispatches` 응답: `{id, dispatchNo, status, totalWeightKg, shipmentCount}`
+- `POST /dispatches`·화물 추가/제외·마감·시작·취소 응답: `{id, dispatchNo, status, totalWeightKg, shipmentCount}`. 화물 추가마다 누적 중량을 검증한다(`VEHICLE_OVERLOAD`). 목록/상세 응답에 적재율 계산용 `capacityKg`를 포함한다(ADR-023).
+- 배차 응답의 `shipmentIds`는 방문 순서대로 정렬한다. 추가 필드: `warehouseId`, `origin`(`{name, latitude, longitude}` 또는 `null`, 좌표가 없으면 위·경도가 `null`), `stops`(방문 순서대로 `[{shipmentId, orderNo, address, latitude, longitude}]`, 좌표가 없으면 위·경도 `null`), `totalDistanceKm`(출발지→방문 순서→…, 직선거리 근사. 좌표가 부족하면 `null`). 화물을 추가하면 방문 순서 맨 뒤에 붙는다. **적재 순서는 방문 순서의 역순**이며 화면이 계산한다.
+- `POST .../route/optimize` 응답: `{dispatch, unlocatedShipmentIds}` (`dispatch`는 배차 응답, `unlocatedShipmentIds`는 좌표를 얻지 못해 순서 끝에 둔 배송). 좌표가 없는 주문·창고는 이 시점에 주소 변환을 한 번 더 시도한다. 출발지 창고가 없거나 좌표가 없으면 `ROUTE_ORIGIN_MISSING`(422).
+- `PATCH .../warehouse`는 없는 창고면 `WAREHOUSE_NOT_FOUND`(404), LOADING이 아니면 `DISPATCH_NOT_LOADING`(409).
+- `PUT .../route`는 담긴 화물과 집합이 다르면 `INVALID_ROUTE_ORDER`(422).
+- 좌표 변환은 OpenStreetMap Nominatim(키 불필요, 한국으로 한정, 초당 1건 제한)을 쓴다. 실패해도 주문·창고 생성은 막지 않고 좌표만 비운다. 거리는 직선거리(Haversine)이며 도로 거리가 아니다(ADR-024).
+- 추가 오류: `DISPATCH_NOT_LOADING`(409, LOADING이 아닌 배차에 화물 추가·제외·마감), `DISPATCH_EMPTY`(409, 화물 없이 마감).
 - 오류: `VEHICLE_OVERLOAD`(422), `VEHICLE_UNAVAILABLE`(409), `DRIVER_UNAVAILABLE`(409), `SHIPMENT_ALREADY_DISPATCHED`(409), `ORDER_NOT_PACKED`(409).
 
 ## 배송현황·완료·실패
