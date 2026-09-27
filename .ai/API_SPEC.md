@@ -54,7 +54,7 @@
 | PATCH | `/inbounds/{id}/putaway` | 적치완료, 위치 재고 +입고수량 | `{locationId}` |
 | GET | `/stocks?warehouseId=&zoneId=&keyword=&stockStatus=` | 재고 현황 | - |
 
-`GET /stocks` 응답 행: `{warehouseName, locationCode, productCode, productName, onHand, reserved, available}`. `stockStatus`: `AVAILABLE`(가용>0) / `SOLD_OUT`(가용=0).
+`GET /stocks` 응답 행: `{warehouseName, locationCode, productCode, productName, onHand, reserved, available, updatedAt}`. `stockStatus`: `AVAILABLE`(가용>0) / `SOLD_OUT`(가용=0). `updatedAt`은 그 재고 행이 마지막으로 바뀐 시각이며 3D 창고에서 "최근 변경" 표시에 쓴다(ADR-026).
 
 ## 주문
 
